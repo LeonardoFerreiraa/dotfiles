@@ -114,3 +114,7 @@ bindsym $mod+Tab workspace next
 
 bindsym $mod+Ctrl+Left workspace prev
 bindsym $mod+Shift+Tab workspace prev
+
+bindsym $mod+Ctrl+l exec i3lock
+
+exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
