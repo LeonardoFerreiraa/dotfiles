@@ -1,6 +1,10 @@
 #!/bin/bash
-if synclient -l | grep "TouchpadOff .*=.*0" ; then
-    synclient TouchpadOff=1 ;
+
+device="ETPS/2 Elantech Touchpad"
+state=$(xinput list-props "$device" | grep "Device Enabled" | grep -o "[01]$")
+
+if [ $state == '1' ];then
+  xinput --disable "$device"
 else
-    synclient TouchpadOff=0 ;
+  xinput --enable "$device"
 fi
