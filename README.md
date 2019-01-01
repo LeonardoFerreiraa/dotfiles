@@ -1,8 +1,21 @@
-# I3 Config
+# Dot Files
 
-install:
+# Install
+
+## Clone
 
 ```
-git clone ... ~/.config/i3
-ln -s ~/.config/i3/.fonts ~/.fonts
+git clone ... ~/.dotfiles
+```
+
+## Fonts
+
+```
+ln -s ~/.dotfiles/fonts ~/.fonts
+```
+
+## I3
+
+```
+ln -s ~/.dotfiles/i3 ~/.config
 ```
