@@ -19,3 +19,9 @@ ln -s ~/.dotfiles/fonts ~/.fonts
 ```
 ln -s ~/.dotfiles/i3 ~/.config
 ```
+
+## VIM
+
+```
+ln -s ~/.dotfiles/vimrc ~/.vimrc
+```
