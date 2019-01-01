@@ -1,0 +1,7 @@
+--recurse=yes
+--exclude=.git
+--exclude=**/dist/*
+--exclude=**/node_modules/*
+--exclude=db/*
+--exclude=log/*
+--exclude=coverage/*
