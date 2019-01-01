@@ -146,6 +146,9 @@ bindsym $mod+Tab        workspace next
 bindsym $mod+Ctrl+Left  workspace prev
 bindsym $mod+Shift+Tab  workspace prev
 
+bindsym Print exec gnome-screenshot
+bindsym Shift+Print exec gnome-screenshot -a
+
 bindsym Ctrl+Mod1+l exec i3lock --color "$bg-color"
 exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
 exec compton
