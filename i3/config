@@ -159,4 +159,4 @@ assign [class="jetbrains-idea"] $workspace2
 
 assign [class="Slack"] $workspace9
 
-assign [title="(?i)spotify"] $workspace10
+assign [class="Spotify"] $workspace10
