@@ -25,7 +25,7 @@ bindsym $mod+Return exec i3-sensible-terminal
 
 bindsym $mod+Shift+q kill
 
-bindsym $mod+d exec rofi -show run -theme glue_pro_blue -font "System San Francisco Display 10"
+bindsym $mod+d exec i3-dmenu-desktop --dmenu="dmenu -l 15 -p '>' -i"
 bindsym $mod+Ctrl+e exec i3-sensible-terminal -e ranger ~
 
 bindsym $mod+j focus left
@@ -113,6 +113,8 @@ bar {
   }
 }
 
+bindsym $mod+Pause exec ~/.config/i3/bin/system
+
 bindsym XF86AudioRaiseVolume exec --no-startup-id ~/.config/i3/bin/volume up
 bindsym XF86AudioLowerVolume exec --no-startup-id ~/.config/i3/bin/volume down
 bindsym XF86AudioMute        exec --no-startup-id ~/.config/i3/bin/volume mute
@@ -141,10 +143,6 @@ bindsym Ctrl+Mod1+l exec i3lock --color "$bg-color"
 exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
 exec compton
 
-assign [class="Google-chrome"] $workspace1
-assign [class="Slack"] $workspace9
-assign [title="(?i)spotify"] $workspace10
-
 hide_edge_borders both
 focus_follows_mouse no
 
@@ -153,3 +151,12 @@ client.focused          $bg-color           $bg-color          $text-color      
 client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color #00ff00
 client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color #00ff00
 client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color
+
+assign [class="Google-chrome"] $workspace1
+
+assign [class="Code"] $workspace2
+assign [class="jetbrains-idea"] $workspace2
+
+assign [class="Slack"] $workspace9
+
+assign [title="(?i)spotify"] $workspace10
