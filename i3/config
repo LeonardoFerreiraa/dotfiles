@@ -142,6 +142,7 @@ exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
 exec compton
 
 assign [class="Google-chrome"] $workspace1
+assign [class="Slack"] $workspace9
 assign [title="(?i)spotify"] $workspace10
 
 hide_edge_borders both
