@@ -26,6 +26,7 @@ bindsym $mod+Return exec i3-sensible-terminal
 bindsym $mod+Shift+q kill
 
 bindsym $mod+d exec rofi -show run -theme glue_pro_blue -font "System San Francisco Display 10"
+bindsym $mod+Ctrl+e exec i3-sensible-terminal -e ranger ~
 
 bindsym $mod+j focus left
 bindsym $mod+k focus down
@@ -90,7 +91,7 @@ bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 
 bindsym $mod+r mode "resize"
 mode "resize" {
-  bindsym j resize shrink width 10 px or 10 ppt
+    bindsym j resize shrink width 10 px or 10 ppt
     bindsym k resize grow height 10 px or 10 ppt
     bindsym l resize shrink height 10 px or 10 ppt
     bindsym ccedilla resize grow width 10 px or 10 ppt
@@ -147,6 +148,7 @@ bindsym $mod+Shift+Tab  workspace prev
 
 bindsym Ctrl+Mod1+l exec i3lock --color "$bg-color"
 exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
+exec compton
 
 assign [class="Google-chrome"] $workspace1
 assign [title="(?i)spotify"] $workspace10
