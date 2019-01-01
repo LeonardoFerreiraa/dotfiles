@@ -1,0 +1,10 @@
+[user]
+	name = Leonardo Ferreira
+	email = mail@leonardoferreira.com.br
+[credential]
+	helper = store
+[push]
+	default = matching
+[alias]
+	st = status -sb
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit

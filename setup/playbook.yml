@@ -1,0 +1,122 @@
+- hosts: localhost
+
+  vars:
+    home: "{{ lookup('env', 'HOME') }}"
+
+  tasks:
+    - name: "Instalando pacotes úteis"
+      apt:
+        name: "{{ item }}"
+        state: latest
+      become: true
+      with_items:
+        - git
+        - terminator
+        - zsh
+        - vim-gtk
+        - tree 
+        - sl
+        - cowsay
+        - fortune
+        - build-essential
+        - autoconf
+        - bison
+        - libssl-dev
+        - libyaml-dev
+        - libreadline6-dev
+        - zlib1g-dev
+        - libncurses5-dev
+        - libffi-dev
+        - libgdbm-dev
+        - nodejs
+        - npm
+        - autoconf
+        - automake
+        - pkg-config
+        - libgtk-3-dev 
+        - jq
+        - xclip
+
+    - name: "Download google-chrome"
+      get_url:
+        url: "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+        dest: /tmp/google-chrome-stable.deb
+
+    - name: "Instalando google-chrome"
+      apt:
+        deb: /tmp/google-chrome-stable.deb
+      become: true
+
+    - name: "Instalando oh-my-zsh"
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+      args:
+        executable: /bin/bash
+
+    - name: "Baixando oh-my-zsh plugins"
+      git:
+        repo: "{{ item.url }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { url: "https://github.com/zsh-users/zsh-syntax-highlighting.git", dest: "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" }
+        - { url: "https://github.com/zsh-users/zsh-autosuggestions", dest: "~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"  }
+        - { url: "https://github.com/junegunn/fzf.git", dest: "~/.fzf" }
+
+    - name: "Instalando fzf"
+      shell: ~/.fzf/install
+
+    - name: "Configurando zshrc"
+      template: 
+        src: templates/zshrc
+        dest: "{{ home }}/.zshrc"
+
+    - name: "Configurando terminator"
+      copy:
+        src: files/terminator-config
+        dest: ~/.config/terminator/config
+
+    - name: "Configurando GIT"
+      copy:
+        src: files/git-config
+        dest: ~/.gitconfig    
+        
+    - name: "Download vscode"
+      get_url:
+        url: "https://vscode-update.azurewebsites.net/latest/linux-deb-x64/stable"
+        dest: /tmp/vs-code.deb
+
+    - name: "Instalando vscode"
+      apt:
+        deb: /tmp/vs-code.deb
+      become: true
+
+    - name: "Instalando n"
+      npm:
+        name: n
+        global: true
+      become: true
+    
+    - name: "Configurações vim"
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/LeonardoFerreiraa/vimrcs/master/install.sh)"
+      args:
+        executable: /bin/bash
+    
+    - name: "apt-key spotify"
+      apt_key:
+        id: "{{ item }}"
+        keyserver: hkp://keyserver.ubuntu.com:80
+      become: true
+      with_items:
+        - 0DF731E45CE24F27EEEB1450EFDC8610341D9410
+        - 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90
+    
+    - name: "apt-repository spotify"
+      apt_repository:
+        repo: deb http://repository.spotify.com stable non-free
+      become: true
+    
+    - name: "Instalando spotify"
+      apt:
+        update_cache: true
+        name: spotify-client
+        state: latest
+      become: true
