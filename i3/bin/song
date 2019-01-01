@@ -1,0 +1,10 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+    1) i3-msg "[class=Spotify] focus" > /dev/null ;;
+    3) xdg-open "$(playerctl metadata xesam:url)" ;;
+esac
+
+if [ "$(playerctl status)" = "Playing" ]; then
+    echo "$(playerctl metadata artist) - $(playerctl metadata title)"
+fi
