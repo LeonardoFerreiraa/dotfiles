@@ -1,0 +1,7 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+    1) gnome-calendar
+esac
+
+date '+%d/%m/%y'
