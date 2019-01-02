@@ -2,9 +2,13 @@
 
 case $BLOCK_BUTTON in
     1) i3-msg "[class=Spotify] focus" > /dev/null ;;
+    2) playerctl play-pause ;;
     3) xdg-open "$(playerctl metadata xesam:url)" ;;
 esac
 
-if [ "$(playerctl status)" = "Playing" ]; then
+player_status="$(playerctl status)"
+if [ $player_status = "Playing" ]; then
     echo "$(playerctl metadata artist) - $(playerctl metadata title)"
+elif [ $player_status = "Paused" ]; then
+    echo "[P] $(playerctl metadata artist) - $(playerctl metadata title)"
 fi
