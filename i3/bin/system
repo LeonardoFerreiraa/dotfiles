@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SELECTED=$(echo -e "Shutdown\nLock\nReboot\nLogout\nExit" | dmenu -i)
+SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | dmenu -i)
 
 case $SELECTED in
     "Shutdown") shutdown -h now ;;

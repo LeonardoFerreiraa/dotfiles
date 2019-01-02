@@ -34,3 +34,8 @@ set hidden
 
 let mapleader=","
 nmap <silent><leader>l :nohls<cr>
+
+noremap ç l
+noremap l k
+noremap k j
+noremap j h

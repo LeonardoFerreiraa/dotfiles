@@ -86,7 +86,6 @@ bindsym $mod+Shift+9 move container to workspace $workspace9
 bindsym $mod+Shift+0 move container to workspace $workspace10
 
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 bindsym $mod+Mod1+Left  resize shrink width   10 px or 10 ppt
 bindsym $mod+Mod1+Down  resize grow   height  10 px or 10 ppt
@@ -96,7 +95,6 @@ bindsym $mod+Mod1+Right resize grow   width   10 px or 10 ppt
 bar {
   status_command i3blocks -c ~/.config/i3/i3blocks.conf
 
-  position top
   tray_padding 2
 
   bindsym button1 nop
@@ -129,12 +127,14 @@ bindsym XF86AudioPlay  exec playerctl play
 bindsym XF86AudioPause exec playerctl pause
 bindsym XF86AudioNext  exec playerctl next
 bindsym XF86AudioPrev  exec playerctl previous
-bindsym XF86AudioStop  exec playerctl stop
+bindsym XF86vAudioStop  exec playerctl stop
 
-bindsym $mod+Ctrl+Right workspace next
-bindsym $mod+Tab        workspace next
-bindsym $mod+Ctrl+Left  workspace prev
-bindsym $mod+Shift+Tab  workspace prev
+bindsym $mod+Ctrl+Right       workspace next
+bindsym $mod+Ctrl+ccedilla    workspace next
+bindsym $mod+Tab              workspace next
+bindsym $mod+Ctrl+Left        workspace prev
+bindsym $mod+Ctrl+j           workspace prev
+bindsym $mod+Shift+Tab        workspace prev
 
 bindsym Print exec gnome-screenshot
 bindsym Shift+Print exec gnome-screenshot -a
@@ -155,8 +155,11 @@ client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color
 assign [class="Google-chrome"] $workspace1
 
 assign [class="Code"] $workspace2
-assign [class="jetbrains-idea"] $workspace2
+assign [class="jetbrains-*"] $workspace2
 
 assign [class="Slack"] $workspace9
 
 assign [class="Spotify"] $workspace10
+
+exec slack
+exec /opt/jetbrains-toolbox-1.12.4481/jetbrains-toolbox --minimize
