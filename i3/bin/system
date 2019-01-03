@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | dmenu -i)
+SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | dmenu -i -fn "System San Francisco Display:pixelsize=16")
 
 case $SELECTED in
     "Shutdown") shutdown -h now ;;

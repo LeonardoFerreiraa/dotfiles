@@ -28,8 +28,6 @@
         - libncurses5-dev
         - libffi-dev
         - libgdbm-dev
-        - nodejs
-        - npm
         - autoconf
         - automake
         - pkg-config
@@ -77,8 +75,8 @@
     - name: "Configurando GIT"
       copy:
         src: files/git-config
-        dest: ~/.gitconfig    
-        
+        dest: ~/.gitconfig
+
     - name: "Download vscode"
       get_url:
         url: "https://vscode-update.azurewebsites.net/latest/linux-deb-x64/stable"
@@ -89,17 +87,6 @@
         deb: /tmp/vs-code.deb
       become: true
 
-    - name: "Instalando n"
-      npm:
-        name: n
-        global: true
-      become: true
-    
-    - name: "Configurações vim"
-      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/LeonardoFerreiraa/vimrcs/master/install.sh)"
-      args:
-        executable: /bin/bash
-    
     - name: "apt-key spotify"
       apt_key:
         id: "{{ item }}"
@@ -108,12 +95,12 @@
       with_items:
         - 0DF731E45CE24F27EEEB1450EFDC8610341D9410
         - 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90
-    
+
     - name: "apt-repository spotify"
       apt_repository:
         repo: deb http://repository.spotify.com stable non-free
       become: true
-    
+
     - name: "Instalando spotify"
       apt:
         update_cache: true

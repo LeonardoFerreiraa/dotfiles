@@ -1,5 +1,12 @@
 # Dot Files
 
+```
+apt install i3 i3blocks i3lock i3status lxappearance dmenu compton feh arc-theme ranger pulseaudio-utils pavucontrol notify-osd
+```
+
+- https://github.com/snwh/moka-icon-theme
+- https://github.com/horst3180/arc-theme
+
 # Install
 
 ## Clone
