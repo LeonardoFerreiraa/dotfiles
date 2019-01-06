@@ -1,10 +1,16 @@
 set $mod Mod4
+set $Alt Mod1
+
+exec xrdb ~/.Xresources
+
+set_from_resource $font-size fontsize
 
 set $bg-color            #2f343f
 set $inactive-bg-color   #2f343f
 set $text-color          #f3f4f5
 set $inactive-text-color #676E7D
 set $urgent-bg-color     #E53935
+set $separator-color     #757575
 
 set $workspace1 "1 "
 set $workspace2 "2 "
@@ -17,7 +23,7 @@ set $workspace8 "8 "
 set $workspace9 "9 "
 set $workspace10 "10 "
 
-font pango:System San Francisco Display 16
+font pango:System San Francisco Display $font-size
 
 floating_modifier $mod
 
@@ -25,7 +31,7 @@ bindsym $mod+Return exec i3-sensible-terminal
 
 bindsym $mod+Shift+q kill
 
-bindsym $mod+d exec i3-dmenu-desktop --dmenu="dmenu -l 15 -p  -i -fn 'System San Francisco Display:pixelsize=16'"
+bindsym $mod+d exec i3-dmenu-desktop --dmenu="dmenu -l 15 -p  -i -fn 'System San Francisco Display:pixelsize=$font-size'"
 bindsym $mod+Ctrl+e exec i3-sensible-terminal -e ranger ~
 
 bindsym $mod+j focus left
@@ -87,10 +93,10 @@ bindsym $mod+Shift+0 move container to workspace $workspace10
 
 bindsym $mod+Shift+r restart
 
-bindsym $mod+Mod1+Left  resize shrink width   10 px or 10 ppt
-bindsym $mod+Mod1+Down  resize grow   height  10 px or 10 ppt
-bindsym $mod+Mod1+Up    resize shrink height  10 px or 10 ppt
-bindsym $mod+Mod1+Right resize grow   width   10 px or 10 ppt
+bindsym $mod+$Alt+Left  resize shrink width   10 px or 10 ppt
+bindsym $mod+$Alt+Down  resize grow   height  10 px or 10 ppt
+bindsym $mod+$Alt+Up    resize shrink height  10 px or 10 ppt
+bindsym $mod+$Alt+Right resize grow   width   10 px or 10 ppt
 
 bar {
   status_command i3blocks -c ~/.config/i3/i3blocks.conf
@@ -103,8 +109,8 @@ bar {
   
   colors {
     background $bg-color
-    separator #757575
-    #                  border             background         text
+    separator $separator-color
+    
     focused_workspace  $bg-color          $bg-color          $text-color
     inactive_workspace $inactive-bg-color $inactive-bg-color $inactive-text-color
     urgent_workspace   $urgent-bg-color   $urgent-bg-color   $text-color
@@ -139,7 +145,7 @@ bindsym $mod+Shift+Tab        workspace prev
 bindsym Print exec gnome-screenshot
 bindsym Shift+Print exec gnome-screenshot -a
 
-bindsym Ctrl+Mod1+l exec i3lock --color "$bg-color"
+bindsym Ctrl+$Alt+l exec i3lock --color "$bg-color"
 exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
 exec compton
 
@@ -147,9 +153,9 @@ hide_edge_borders both
 focus_follows_mouse no
 
 #                       border              background         text                 indicator
-client.focused          $bg-color           $bg-color          $text-color          #00ff00
-client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color #00ff00
-client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color #00ff00
+client.focused          $bg-color           $bg-color          $text-color          #ffffff
+client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color #ffffff
+client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color #ffffff
 client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color
 
 assign [class="Google-chrome"] $workspace1

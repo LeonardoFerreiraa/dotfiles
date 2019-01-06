@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | dmenu -i -fn "System San Francisco Display:pixelsize=16")
+FONT_SIZE=(xrdb -query | grep "fontsize" | cut -f 2)
+SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | dmenu -i -fn "System San Francisco Display:pixelsize=$FONT_SIZE")
 
 case $SELECTED in
     "Shutdown") shutdown -h now ;;

@@ -9,6 +9,12 @@ apt install i3 i3blocks i3lock i3status lxappearance dmenu compton feh arc-theme
 
 # Install
 
+## Xresources
+
+```
+echo "fontsize: 16" > ~/.Xresources
+```
+
 ## Clone
 
 ```
