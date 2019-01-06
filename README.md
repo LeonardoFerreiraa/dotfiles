@@ -12,7 +12,17 @@ apt install i3 i3blocks i3lock i3status lxappearance dmenu compton feh arc-theme
 ## Xresources
 
 ```
-echo "fontsize: 16" > ~/.Xresources
+cat <<EOF > ~/.Xresources
+font-size: 16
+touchpad: ETPS/2 Elantech Touchad
+bg-color: #2f343f
+inactive-bg-color: #2f343f
+text-color: #f3f4f5
+inactive-text-color: #676E7D
+urgent-bg-color: #E53935
+separator-color: #757575
+indicator-color: #000000
+EOF
 ```
 
 ## Clone

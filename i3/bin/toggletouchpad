@@ -1,10 +1,9 @@
 #!/bin/bash
 
-device="ETPS/2 Elantech Touchpad"
-state=$(xinput list-props "$device" | grep "Device Enabled" | grep -o "[01]$")
+state=$(xinput list-props "$1" | grep "Device Enabled" | grep -o "[01]$")
 
 if [ $state == '1' ];then
-  xinput --disable "$device"
+  xinput --disable "$1"
 else
-  xinput --enable "$device"
+  xinput --enable "$1"
 fi

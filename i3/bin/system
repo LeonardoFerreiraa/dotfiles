@@ -1,11 +1,11 @@
 #!/bin/bash
 
-FONT_SIZE=(xrdb -query | grep "fontsize" | cut -f 2)
-SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | dmenu -i -fn "System San Francisco Display:pixelsize=$FONT_SIZE")
+
+SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | ~/.config/i3/bin/menu)
 
 case $SELECTED in
     "Shutdown") shutdown -h now ;;
-    "Lock") i3lock --color "#2f343f" ;;
+    "Lock") ~/.config/i3/bin/lock ;;
     "Reboot") shutdown -r now ;;
     "Logout") i3-msg exit ;;
     *) ;;

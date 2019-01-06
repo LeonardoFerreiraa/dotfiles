@@ -3,14 +3,16 @@ set $Alt Mod1
 
 exec xrdb ~/.Xresources
 
-set_from_resource $font-size fontsize
+set_from_resource $font-size font-size
+set_from_resource $touchpad touchpad
 
-set $bg-color            #2f343f
-set $inactive-bg-color   #2f343f
-set $text-color          #f3f4f5
-set $inactive-text-color #676E7D
-set $urgent-bg-color     #E53935
-set $separator-color     #757575
+set_from_resource $bg-color            bg-color
+set_from_resource $inactive-bg-color   inactive-bg-color
+set_from_resource $text-color          text-color
+set_from_resource $inactive-text-color inactive-text-color
+set_from_resource $urgent-bg-color     urgent-bg-color
+set_from_resource $separator-color     separator-color
+set_from_resource $indicator-color     indicator-color
 
 set $workspace1 "1 "
 set $workspace2 "2 "
@@ -31,7 +33,7 @@ bindsym $mod+Return exec i3-sensible-terminal
 
 bindsym $mod+Shift+q kill
 
-bindsym $mod+d exec i3-dmenu-desktop --dmenu="dmenu -l 15 -p  -i -fn 'System San Francisco Display:pixelsize=$font-size'"
+bindsym $mod+d exec i3-dmenu-desktop --dmenu=~/.config/i3/bin/menu
 bindsym $mod+Ctrl+e exec i3-sensible-terminal -e ranger ~
 
 bindsym $mod+j focus left
@@ -126,8 +128,8 @@ bindsym XF86AudioMute        exec --no-startup-id ~/.config/i3/bin/volume mute
 bindsym XF86MonBrightnessUp   exec xbacklight -inc 20
 bindsym XF86MonBrightnessDown exec xbacklight -dec 20
 
-exec xinput disable "ETPS/2 Elantech Touchpad"
-bindsym XF86TouchpadToggle exec ~/.config/i3/bin/toggletouchpad
+exec xinput disable $touchpad
+bindsym XF86TouchpadToggle exec ~/.config/i3/bin/toggletouchpad $touchpad
 
 bindsym XF86AudioPlay  exec playerctl play
 bindsym XF86AudioPause exec playerctl pause
@@ -153,9 +155,9 @@ hide_edge_borders both
 focus_follows_mouse no
 
 #                       border              background         text                 indicator
-client.focused          $bg-color           $bg-color          $text-color          #ffffff
-client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color #ffffff
-client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color #ffffff
+client.focused          $bg-color           $bg-color          $text-color          $indicator-color
+client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color $indicator-color
+client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color $indicator-color
 client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color
 
 assign [class="Google-chrome"] $workspace1

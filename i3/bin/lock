@@ -1,0 +1,4 @@
+#!/bin/bash
+
+BG_COLOR=$(xrdb -query | grep "^bg-color:" | cut -f 2)
+i3lock --color "$BG_COLOR"
