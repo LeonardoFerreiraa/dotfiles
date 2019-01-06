@@ -1,0 +1,32 @@
+[frame]
+width=0
+color="#ffffff"
+
+[urgency_low]
+background="#2f343f"
+foreground="#f3f4f5"
+timeout=3
+
+[urgency_normal]
+background="#2f343f"
+foreground="#f3f4f5"
+timeout=3
+
+[urgency_critical]
+background="#E53935"
+foreground="#ffffff"
+timeout=3
+
+[global]
+format = "<b>%s</b>\n%b\n"
+geometry = "300x5-10+10"
+font=System San Francisco Display 10
+markup=full
+word_wrap=true
+transparency=10
+monitor=0
+show_indicators=false
+padding=8
+horizontal_padding=8
+startup_notification=false
+corner_radius=5
