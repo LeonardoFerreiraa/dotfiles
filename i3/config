@@ -171,3 +171,4 @@ assign [class="Spotify"] $workspace10
 
 exec slack
 exec /opt/jetbrains-toolbox/jetbrains-toolbox --minimize
+exec numlockx on
