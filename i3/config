@@ -131,11 +131,12 @@ bindsym XF86MonBrightnessDown exec xbacklight -dec 20
 exec xinput disable $touchpad
 bindsym XF86TouchpadToggle exec ~/.config/i3/bin/toggletouchpad $touchpad
 
-bindsym XF86AudioPlay  exec playerctl play
-bindsym XF86AudioPause exec playerctl pause
+bindsym XF86AudioPlay  exec playerctl play-pause
 bindsym XF86AudioNext  exec playerctl next
 bindsym XF86AudioPrev  exec playerctl previous
-bindsym XF86vAudioStop  exec playerctl stop
+bindsym XF86vAudioStop exec playerctl stop
+
+bindsym XF86Calculator exec i3-sensible-terminal -e bc
 
 bindsym $mod+Ctrl+Right       workspace next
 bindsym $mod+Ctrl+ccedilla    workspace next
