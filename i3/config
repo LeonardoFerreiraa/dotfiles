@@ -154,6 +154,7 @@ exec compton
 
 hide_edge_borders both
 focus_follows_mouse no
+focus_on_window_activation focus
 
 #                       border              background         text                 indicator
 client.focused          $bg-color           $bg-color          $text-color          $indicator-color
@@ -169,6 +170,7 @@ assign [class="jetbrains-*"] $workspace2
 assign [class="Slack"] $workspace9
 
 assign [class="Spotify"] $workspace10
+for_window [class="Spotify"] move to workspace $workspace10
 
 exec slack
 exec /opt/jetbrains-toolbox/jetbrains-toolbox --minimize
