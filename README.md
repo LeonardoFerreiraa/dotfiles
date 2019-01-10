@@ -1,7 +1,7 @@
 # Dot Files
 
 ```
-apt install i3 i3blocks i3lock i3status lxappearance dmenu compton feh arc-theme ranger pulseaudio-utils pavucontrol notify-osd maim dunst numlockx
+apt install i3 i3blocks i3lock i3status lxappearance dmenu compton feh arc-theme ranger pulseaudio-utils pavucontrol notify-osd maim dunst numlockx xautolock
 ```
 
 - https://github.com/snwh/moka-icon-theme
