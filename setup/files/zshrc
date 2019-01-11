@@ -1,4 +1,4 @@
-export ZSH="{{ home }}/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
 
@@ -18,4 +18,4 @@ export EDITOR=vim
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 alias clipboard="xclip -selection clipboard"
-alias g=git
+alias psql=pgcli

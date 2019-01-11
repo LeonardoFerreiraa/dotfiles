@@ -1,0 +1,107 @@
+#!/bin/bash
+
+install_i3_dependencies() {
+    for ppa in $(cat ./dependencies/i3/ppas); do
+        sudo add-apt-repository -y ppa:$ppa
+    done
+
+    apt update
+
+    for package in $(cat ./dependencies/i3/packages); do
+        apt install -y $package
+    done
+}
+
+link_i3_files() {
+    ln -s ~/.dotfiles/fonts ~/.fonts
+    ln -s ~/.dotfiles/i3 ~/.config
+    ln -s ~/.dotfiles/vimrc ~/.vimrc
+    ln -s ~/.dotfiles/dunst ~/.config
+}
+
+setup_i3() {
+    install_i3_dependencies
+    link_i3_files
+    cp ./files/Xresources ~/.Xresources
+}
+
+install_oh_my_zsh() {
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+    git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+    git clone https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install
+    cp ./files/zshrc ~/.zshrc
+}
+
+install_chrome() {
+    wget -O /tmp/google-chrome-stable.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo dpkg -i /tmp/google-chrome-stable.deb
+    rm /tmp/google-chrome-stable.deb
+    apt install -y -f
+}
+
+copy_config_files() {
+    cp ./files/terminator ~/.config/terminator/config
+    cp ./files/gitconfig ~/.gitconfig
+}
+
+install_vscode() {
+    wget -O /tmp/vscode.deb https://vscode-update.azurewebsites.net/latest/linux-deb-x64/stable
+    sudo dpkg -i /tmp/vscode.deb
+    rm /tmp/vscode.deb
+    apt install -y -f
+}
+
+install_spotify() {
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90
+    echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
+    apt update
+    apt install spotify-client
+}
+
+install_postgres() {
+    apt install postgresql postgresql-contrib libpq-dev
+    sudo -u postgres createuser -rds $USER
+    createdb $USER
+
+    sudo pip install setuptools
+    sudo pip install pgcli
+}
+
+setup_all() {
+    for package in $(cat ./dependencies/general/packages); do
+        apt install -y $package
+    done
+
+    install_oh_my_zsh
+    install_chrome
+
+    copy_config_files
+
+    install_vscode
+    install_spotify
+    install_postgres
+
+    setup_i3
+}
+
+print_usage() {
+    echo "usage:"
+    echo -e "\t./install setup-i3"
+    echo -e "\t\tinstall i3 dependencies and configs"
+    echo -e "\t./install setup-all"
+    echo -e "\t\tinstall all dependencies and configs"
+}
+
+case "$1" in
+    "setup-i3")
+        setup_i3
+    ;;
+    "setup-all")
+        setup_all
+    ;;
+    *)
+        print_usage
+    ;;
+esac
