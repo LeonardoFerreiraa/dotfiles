@@ -1,0 +1,49 @@
+#!/usr/bin/python
+
+import pulsectl
+import sys
+
+
+def list_sinks(pulse, sink_default):
+    for sink in pulse.sink_list():
+        print("%s%s" % (("", "* ")[sink_default == sink.index], sink.description))
+
+
+def list_sink_inputs(pulse):
+    for input in pulse.sink_input_list():
+        print(input.index)
+
+
+def find_sink_by_description(pulse, description):
+    for sink in pulse.sink_list():
+        if description == sink.description:
+            print(sink.index)
+            return
+
+
+def retrieve_volume(pulse, index):
+    for sink in pulse.sink_list():
+        if index == sink.index:
+            print("%0.f" % (pulse.volume_get_all_chans(sink) * 100))
+            return
+
+
+def is_muted(pulse, index):
+    for sink in pulse.sink_list():
+        if index == sink.index:
+            print(sink.mute)
+            return
+
+
+if len(sys.argv) >= 2:
+    with pulsectl.Pulse('pulse-helper') as pulse:
+        if sys.argv[1] == "list-sinks":
+            list_sinks(pulse, int(sys.argv[2]))
+        elif sys.argv[1] == "find-sink-by-description":
+            find_sink_by_description(pulse, sys.argv[2])
+        elif sys.argv[1] == "list-sink-inputs":
+            list_sink_inputs(pulse)
+        elif sys.argv[1] == "retrieve-volume":
+            retrieve_volume(pulse, int(sys.argv[2]))
+        elif sys.argv[1] == "is-muted":
+            is_muted(pulse, int(sys.argv[2]))

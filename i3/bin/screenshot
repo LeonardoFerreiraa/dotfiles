@@ -1,6 +1,6 @@
-#/bin/bash
+#!/bin/bash
 
-SAVE_MODE=$(echo "Clipboard\nFile" | ~/.config/i3/bin/menu)
+SAVE_MODE=$(echo -e "Clipboard\nFile" | ~/.config/i3/bin/menu)
 
 case $SAVE_MODE in
     "Clipboard") 
