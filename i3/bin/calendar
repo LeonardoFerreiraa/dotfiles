@@ -1,6 +1,6 @@
 #!/bin/bash
 
-case $BLOCK_BUTTON in
+case "$BLOCK_BUTTON" in
     1) gnome-calendar ;;
 esac
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$(xprop -id $(xprop -root _NET_ACTIVE_WINDOW | awk '{ print $5 }') | grep _NET_WM_STATE_FULLSCREEN)" ]; then
+if [[ -z "$(xprop -id $(xprop -root _NET_ACTIVE_WINDOW | awk '{ print $5 }') | grep _NET_WM_STATE_FULLSCREEN)" ]]; then
     maim --format=png  /tmp/screenshot.png
     i3lock -i /tmp/screenshot.png
     rm /tmp/screenshot.png  

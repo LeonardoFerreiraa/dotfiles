@@ -1,13 +1,14 @@
 #!/bin/bash
 
 channel=$(pacmd list-sinks | grep '* index:' | cut -d':' -f2 | sed 's/ //')
+pulsehelper=~/.config/i3/bin/pulsehelper
 
 retrieve_volume() {
-    ~/.config/i3/bin/pulsehelper retrieve-volume "$channel"
+    $pulsehelper retrieve-volume "$channel"
 }
 
 print_volume() {
-    if [[ "$(~/.config/i3/bin/pulsehelper is-muted "$channel")" == "1" ]]; then
+    if [[ "$($pulsehelper is-muted "$channel")" == "1" ]]; then
         echo "MUTE"
     else
         echo "$(retrieve_volume)%"
@@ -29,12 +30,12 @@ mute() {
 }
 
 change_output_device() {
-    sink_description=$(~/.config/i3/bin/pulsehelper list-sinks "$channel" | ~/.config/i3/bin/menu | sed 's/^* //')
-    sink=$(~/.config/i3/bin/pulsehelper find-sink-by-description "$sink_description")
+    sink_description=$($pulsehelper list-sinks "$channel" | ~/.config/i3/bin/menu | sed 's/^* //')
+    sink=$($pulsehelper find-sink-by-description "$sink_description")
 
     if [[ ! -z "$sink" ]]; then
         pacmd set-default-sink "$sink"
-        for input in $(~/.config/i3/bin/pulsehelper list-sink-inputs); do
+        for input in $($pulsehelper list-sink-inputs); do
             pacmd move-sink-input "$input" "$sink"
         done
     fi

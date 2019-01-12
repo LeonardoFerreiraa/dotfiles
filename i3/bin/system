@@ -1,12 +1,10 @@
 #!/bin/bash
 
-
 SELECTED=$(echo -e "Shutdown\nReboot\nLock\nLogout\nExit" | ~/.config/i3/bin/menu)
 
-case $SELECTED in
+case "$SELECTED" in
     "Shutdown") shutdown -h now ;;
     "Lock") ~/.config/i3/bin/lock ;;
     "Reboot") shutdown -r now ;;
     "Logout") i3-msg exit ;;
-    *) ;;
 esac

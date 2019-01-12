@@ -2,15 +2,14 @@
 
 SAVE_MODE=$(echo -e "Clipboard\nFile" | ~/.config/i3/bin/menu)
 
-case $SAVE_MODE in
+case "$SAVE_MODE" in
     "Clipboard") 
         maim --format=png /dev/stdout $@ | xclip -selection clipboard -t image/png | notify-send 
-        notify-send "New Screnshot" "Clipboard"
+        notify-send "New Screenshot" "Clipboard"
         ;;
     "File") 
         FILE_NAME=~/Pictures/$(date '+%d%m%Y%H%M%S.png')
         maim --format=png $@ $FILE_NAME
-        notify-send "New Screnshot" "$FILE_NAME"
+        notify-send "New Screenshot" "$FILE_NAME"
         ;;
-    *) ;;
 esac
