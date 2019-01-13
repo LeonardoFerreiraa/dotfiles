@@ -172,6 +172,6 @@ for_window [class="Spotify"] move to workspace $workspace10
 exec slack
 exec /opt/jetbrains-toolbox/jetbrains-toolbox --minimize
 exec numlockx on
-exec ~/.config/i3/bin/autolock
+exec xautolock -time 10 -locker ~/.dotfiles/i3/bin/lock
 exec compton
 exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
