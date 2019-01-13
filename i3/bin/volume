@@ -30,7 +30,7 @@ mute() {
 }
 
 change_output_device() {
-    sink_description=$($pulsehelper list-sinks "$channel" | ~/.config/i3/bin/menu | sed 's/^* //')
+    sink_description=$($pulsehelper list-sinks "$channel" | zenity --list --column "Output" --hide-header --title="Change Output device" --text "Choose the output device" --width=1000 --height=500 | sed 's/^* //')
     sink=$($pulsehelper find-sink-by-description "$sink_description")
 
     if [[ ! -z "$sink" ]]; then
