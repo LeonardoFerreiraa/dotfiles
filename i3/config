@@ -165,6 +165,7 @@ assign [class="Code"] $workspace2
 assign [class="jetbrains-*"] $workspace2
 
 assign [class="Slack"] $workspace9
+assign [class="zoom"] $workspace9
 
 assign [class="Spotify"] $workspace10
 for_window [class="Spotify"] move to workspace $workspace10
