@@ -10,6 +10,15 @@ install_i3_dependencies() {
     for package in $(cat ./dependencies/i3/packages); do
         apt install -y $package
     done
+
+    install_playerctl
+}
+
+install_playerctl() {
+    wget -O /tmp/playerctl.deb https://github.com/acrisci/playerctl/releases/download/v2.0.1/playerctl-2.0.1_amd64.deb
+    sudo dpkg -i /tmp/playerctl.deb
+    rm /tmp/playerctl.deb
+    apt install -y -f
 }
 
 link_i3_files() {
