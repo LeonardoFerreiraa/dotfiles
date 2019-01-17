@@ -26,12 +26,14 @@ link_i3_files() {
     ln -s ~/.dotfiles/i3 ~/.config
     ln -s ~/.dotfiles/vimrc ~/.vimrc
     ln -s ~/.dotfiles/dunst ~/.config
+    ln -s ~/.dotfiles/wallpaper.jpg ~/Pictures/wallpaper.jpg
 }
 
 setup_i3() {
     install_i3_dependencies
     link_i3_files
     cp ./files/Xresources ~/.Xresources
+    pip install pulsectl
 }
 
 install_oh_my_zsh() {
