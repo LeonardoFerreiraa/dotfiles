@@ -26,7 +26,10 @@ link_i3_files() {
     ln -s ~/.dotfiles/i3 ~/.config
     ln -s ~/.dotfiles/vimrc ~/.vimrc
     ln -s ~/.dotfiles/dunst ~/.config
+
     ln -s ~/.dotfiles/wallpaper.jpg ~/Pictures/wallpaper.jpg
+    sudo rm /usr/share/backgrounds/linuxmint/default_background.jpg
+    sudo ln -s ~/Pictures/wallpaper.jpg /usr/share/backgrounds/linuxmint/default_background.jpg
 }
 
 setup_i3() {
