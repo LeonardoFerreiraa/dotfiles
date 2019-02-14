@@ -15,9 +15,9 @@ set_from_resource $separator-color     separator-color
 set_from_resource $indicator-color     indicator-color
 
 set $workspace1 "1 "
-set $workspace2 "2 "
+set $workspace2 "2 "
 set $workspace3 "3 "
-set $workspace4 "4 "
+set $workspace4 "4 "
 set $workspace5 "5 "
 set $workspace6 "6 "
 set $workspace7 "7 "
@@ -149,6 +149,8 @@ bindsym Shift+Print exec ~/.config/i3/bin/screenshot -s
 
 bindsym Ctrl+$Alt+l exec ~/.config/i3/bin/lock
 
+bindsym $mod+c exec "env XDG_CURRENT_DESKTOP=GNOME gnome-control-center"
+
 hide_edge_borders both
 focus_follows_mouse no
 focus_on_window_activation focus
@@ -161,8 +163,9 @@ client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color
 
 assign [class="Google-chrome"] $workspace1
 
-assign [class="Code"] $workspace2
 assign [class="jetbrains-*"] $workspace2
+
+assign [class="Code"] $workspace4
 
 assign [class="Slack"] $workspace9
 assign [class="zoom"] $workspace9
@@ -176,5 +179,3 @@ exec numlockx on
 exec xautolock -time 10 -locker ~/.dotfiles/i3/bin/lock
 exec compton
 exec_always feh --bg-scale ~/Pictures/wallpaper.jpg
-
-for_window [class="jetbrains-*"] layout stacking
