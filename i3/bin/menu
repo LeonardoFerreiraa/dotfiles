@@ -1,4 +1,0 @@
-#!/bin/bash
-
-FONT_SIZE=$(xrdb -query | grep "^menu-font-size:" | cut -f 2)
-dmenu -l 15 -p  -i -fn "System San Francisco Display:pixelsize=$FONT_SIZE"

@@ -1,42 +1,13 @@
 #!/bin/bash
 
-install_i3_dependencies() {
-    for ppa in $(cat ./dependencies/i3/ppas); do
-        sudo add-apt-repository -y ppa:$ppa
+install_dependencies() {
+    for repository in $(cat ./dependencies/repositories); do
+        sudo add-apt-repository -y $repository
     done
 
-    apt update
-
-    for package in $(cat ./dependencies/i3/packages); do
-        apt install -y $package
+    for package in $(cat ./dependencies/packages); do
+        sudo apt install -y $package
     done
-
-    install_playerctl
-}
-
-install_playerctl() {
-    wget -O /tmp/playerctl.deb https://github.com/acrisci/playerctl/releases/download/v2.0.1/playerctl-2.0.1_amd64.deb
-    sudo dpkg -i /tmp/playerctl.deb
-    rm /tmp/playerctl.deb
-    apt install -y -f
-}
-
-link_i3_files() {
-    ln -s ~/.dotfiles/fonts ~/.fonts
-    ln -s ~/.dotfiles/i3 ~/.config
-    ln -s ~/.dotfiles/vimrc ~/.vimrc
-    ln -s ~/.dotfiles/dunst ~/.config
-
-    ln -s ~/.dotfiles/wallpaper.jpg ~/Pictures/wallpaper.jpg
-    sudo rm /usr/share/backgrounds/linuxmint/default_background.jpg
-    sudo ln -s ~/Pictures/wallpaper.jpg /usr/share/backgrounds/linuxmint/default_background.jpg
-}
-
-setup_i3() {
-    install_i3_dependencies
-    link_i3_files
-    cp ./files/Xresources ~/.Xresources
-    pip install pulsectl
 }
 
 install_oh_my_zsh() {
@@ -52,30 +23,25 @@ install_chrome() {
     wget -O /tmp/google-chrome-stable.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     sudo dpkg -i /tmp/google-chrome-stable.deb
     rm /tmp/google-chrome-stable.deb
-    apt install -y -f
-}
-
-copy_config_files() {
-    cp ./files/terminator ~/.config/terminator/config
-    cp ./files/gitconfig ~/.gitconfig
+    sudo apt install -y -f
 }
 
 install_vscode() {
     wget -O /tmp/vscode.deb https://vscode-update.azurewebsites.net/latest/linux-deb-x64/stable
     sudo dpkg -i /tmp/vscode.deb
     rm /tmp/vscode.deb
-    apt install -y -f
+    sudo apt install -y -f
 }
 
 install_spotify() {
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90
     echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
-    apt update
-    apt install spotify-client
+    sudo apt update
+    sudo apt install spotify-client
 }
 
 install_postgres() {
-    apt install postgresql postgresql-contrib libpq-dev
+    sudo apt install postgresql postgresql-contrib libpq-dev
     sudo -u postgres createuser -rds $USER
     createdb $USER
 
@@ -83,39 +49,44 @@ install_postgres() {
     sudo pip install pgcli
 }
 
+install_docker() {
+    curl -sSL get.docker.io | sh
+    sudo usermod -aG docker $USER
+}
+
+install_node() {
+    sudo npm install -g n
+    sudo n stable
+}
+
+copy_config_files() {
+    mkdir ~/.config/terminator
+    cp ./files/terminator ~/.config/terminator/config
+    cp ./files/gitconfig ~/.gitconfig
+}
+
+setup_vim() {
+    ln -s ~/.dotfiles/vimrc ~/.vimrc
+}
+
+setup_dconf() {
+    dconf load /org/gnome/mutter < ./files/dconf-mutter
+    dconf load /org/gnome/shell < ./files/dconf-shell
+}
+
 setup_all() {
-    for package in $(cat ./dependencies/general/packages); do
-        apt install -y $package
-    done
+    install_dependencies
 
     install_oh_my_zsh
     install_chrome
-
-    copy_config_files
-
     install_vscode
     install_spotify
     install_postgres
+    install_docker
+    install_node
 
-    setup_i3
+    copy_config_files
+    setup_vim
 }
 
-print_usage() {
-    echo "usage:"
-    echo -e "\t./install setup-i3"
-    echo -e "\t\tinstall i3 dependencies and configs"
-    echo -e "\t./install setup-all"
-    echo -e "\t\tinstall all dependencies and configs"
-}
-
-case "$1" in
-    "setup-i3")
-        setup_i3
-    ;;
-    "setup-all")
-        setup_all
-    ;;
-    *)
-        print_usage
-    ;;
-esac
+setup_all

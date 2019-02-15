@@ -1,0 +1,8 @@
+[extensions/dash-to-dock]
+dock-fixed=true
+dock-position='BOTTOM'
+dash-max-icon-size=16
+
+[/]
+favorite-apps=@as []
+enable-hot-corners=false

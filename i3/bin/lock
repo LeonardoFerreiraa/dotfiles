@@ -1,7 +1,0 @@
-#!/bin/bash
-
-if [[ -z "$(xprop -id $(xprop -root _NET_ACTIVE_WINDOW | awk '{ print $5 }') | grep _NET_WM_STATE_FULLSCREEN)" ]]; then
-    COLOR=$(xrdb -query | grep "^bg-color:" | cut -f 2)
-    i3lock -c $COLOR
-    
-fi

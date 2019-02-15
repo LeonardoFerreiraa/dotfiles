@@ -1,3 +1,4 @@
+curl
 terminator
 zsh
 vim-gtk
@@ -24,3 +25,6 @@ xclip
 node
 npm
 python-pip
+htop
+arc-theme
+numix-icon-theme-circle
