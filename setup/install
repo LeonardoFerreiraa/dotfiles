@@ -70,8 +70,8 @@ setup_vim() {
 }
 
 setup_dconf() {
-    dconf load /org/gnome/mutter < ./files/dconf-mutter
-    dconf load /org/gnome/shell < ./files/dconf-shell
+    dconf load /org/gnome/mutter/ < ./files/dconf-mutter
+    dconf load /org/gnome/shell/ < ./files/dconf-shell
 }
 
 setup_all() {
