@@ -2,7 +2,7 @@ curl
 terminator
 zsh
 vim-gtk
-tree 
+tree
 sl
 cowsay
 fortune
@@ -28,3 +28,4 @@ python-pip
 htop
 arc-theme
 numix-icon-theme-circle
+gnome-tweak-tool
