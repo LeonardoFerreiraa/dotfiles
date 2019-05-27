@@ -89,6 +89,7 @@ setup_all() {
 
     copy_config_files
     setup_vim
+    setup_dconf
 }
 
 setup_all
