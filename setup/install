@@ -76,6 +76,10 @@ setup_dconf() {
     gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['']"
 }
 
+setup_tilix() {
+    dconf load /com/gexperts/Tilix/ < ./files/tilix.conf
+}
+
 setup_all() {
     install_dependencies
 
@@ -90,6 +94,7 @@ setup_all() {
     copy_config_files
     setup_vim
     setup_dconf
+    setup_tilix
 }
 
 setup_all
