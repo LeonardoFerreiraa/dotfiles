@@ -140,7 +140,7 @@ require('lazy').setup({
       { '<leader>fb', '<cmd>Telescope buffers<cr>', desc = 'Buffers' },
       { '<leader>fh', '<cmd>Telescope help_tags<cr>', desc = 'Help tags' },
       { '<leader>fw', '<cmd>Telescope diagnostics<cr>', desc = 'Diagnostics (warnings/errors)' },
-      { '<leader>fu', function() require('telescope.builtin').lsp_references() end, desc = 'Find usages (LSP references)' },
+      { '<leader>fu', function() require('lsp_extras').references() end, desc = 'Find usages (LSP references, com loading)' },
     },
   },
 })
