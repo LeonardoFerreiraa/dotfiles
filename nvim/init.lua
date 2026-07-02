@@ -54,6 +54,9 @@ vim.g.mapleader = ' '
 -- doesn't fire before leader mappings are processed.
 vim.keymap.set({ 'n', 'x' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', '<leader>l', ':nohls<CR>', { silent = true })
+-- jumplist navigation (e.g. back/forward after gd, <leader>fu, <leader>fd, etc.)
+vim.keymap.set('n', '<leader>gb', '<C-o>', { desc = 'Jump back' })
+vim.keymap.set('n', '<leader>gf', '<C-i>', { desc = 'Jump forward' })
 
 vim.g.netrw_banner = 0
 vim.g.netrw_liststyle = 3
