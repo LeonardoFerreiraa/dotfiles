@@ -107,6 +107,15 @@ require('lazy').setup({
   'neovim/nvim-lspconfig',
   'mfussenegger/nvim-jdtls',
   {
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    opts = {
+      direction = 'float',
+      float_opts = { border = 'curved' },
+      open_mapping = [[<leader>t]],
+    },
+  },
+  {
     'nvim-telescope/telescope.nvim',
     tag = '0.1.8',
     dependencies = { 'nvim-lua/plenary.nvim' },
