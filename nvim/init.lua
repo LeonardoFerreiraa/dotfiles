@@ -64,10 +64,10 @@ vim.keymap.set('n', '<leader>nh', '<C-w>h', { desc = 'Go to left window' })
 vim.keymap.set('n', '<leader>nj', '<C-w>j', { desc = 'Go to window below' })
 vim.keymap.set('n', '<leader>nk', '<C-w>k', { desc = 'Go to window above' })
 vim.keymap.set('n', '<leader>nl', '<C-w>l', { desc = 'Go to right window' })
-vim.keymap.set('t', '<leader>nh', [[<C-\><C-n><C-w>h]], { desc = 'Go to left window' })
-vim.keymap.set('t', '<leader>nj', [[<C-\><C-n><C-w>j]], { desc = 'Go to window below' })
-vim.keymap.set('t', '<leader>nk', [[<C-\><C-n><C-w>k]], { desc = 'Go to window above' })
-vim.keymap.set('t', '<leader>nl', [[<C-\><C-n><C-w>l]], { desc = 'Go to right window' })
+-- Not mapped in terminal-job (insert) mode: since <leader> is <Space>, doing
+-- so would make every <Space> keystroke while typing in the terminal wait
+-- for the mapping timeout. Use <Esc> to reach terminal-normal mode first,
+-- then <leader>nh/j/k/l from there.
 
 -- Terminal buffers (toggleterm) should behave like a normal buffer with
 -- normal/insert/visual modes: <Space> should not be hijacked by leader while
