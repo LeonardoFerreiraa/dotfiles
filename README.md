@@ -22,6 +22,7 @@ Na primeira vez que abrir o `nvim`, o [lazy.nvim](https://github.com/folke/lazy.
 | `<leader>fb`        | Buffers abertos (Telescope `buffers`)             |
 | `<leader>fw`        | Warnings/erros (Telescope `diagnostics`)          |
 | `<leader>fu`        | Find usage / referências (Telescope `lsp_references`) |
+| `<leader>fd`        | Definitions & declarations juntas no Telescope (dedup) |
 | `gd`                | Go to definition                                  |
 | `gD`                | Go to declaration                                 |
 | `K`                 | Hover (documentação)                              |
