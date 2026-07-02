@@ -23,6 +23,8 @@ Na primeira vez que abrir o `nvim`, o [lazy.nvim](https://github.com/folke/lazy.
 | `<leader>fw`        | Warnings/erros (Telescope `diagnostics`)          |
 | `<leader>fu`        | Find usage / referências (Telescope `lsp_references`) |
 | `<leader>fd`        | Definitions & declarations juntas no Telescope (dedup) |
+| `<leader>ca`        | Code actions / sugestões de correção (Telescope, substitui `gra`) |
+| `<leader>sd`        | Show diagnostic — mostra o warning/erro completo do cursor (substitui `<C-w>d`) |
 | `gd`                | Go to definition                                  |
 | `gD`                | Go to declaration                                 |
 | `K`                 | Hover (documentação)                              |

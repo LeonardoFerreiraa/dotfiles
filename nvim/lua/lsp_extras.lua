@@ -12,6 +12,7 @@ local finders = require('telescope.finders')
 local conf = require('telescope.config').values
 local make_entry = require('telescope.make_entry')
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 
 local LOADING_TEXT = 'Buscando, aguarde…'
 
@@ -136,6 +137,79 @@ function M.references()
       on_result(items, offset_encoding)
     end)
   end)
+end
+
+-- Same as vim.lsp.buf.code_action(), but shows the choices in a Telescope
+-- picker (with the same instant-loading UX) instead of vim.ui.select's
+-- default menu. Reuses the real vim.lsp.buf.code_action() implementation
+-- (correct per-diagnostic context, multi-client support, codeAction/resolve,
+-- applying edits/commands) by temporarily intercepting vim.ui.select.
+function M.code_actions()
+  local picker = pickers.new({}, {
+    prompt_title = 'Code Actions',
+    finder = loading_finder(),
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, _)
+      actions.select_default:replace(function()
+        local entry = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        if entry and entry.value and M._on_choice then
+          M._on_choice(entry.value)
+        end
+      end)
+      return true
+    end,
+  })
+  picker:find()
+
+  local original_ui_select = vim.ui.select
+  local original_notify = vim.notify
+  local finished = false
+
+  local function restore()
+    vim.ui.select = original_ui_select
+    vim.notify = original_notify
+  end
+
+  -- vim.lsp.buf.code_action() calls vim.notify('No code actions available', ...)
+  -- (or an "unsupported method" warning) instead of vim.ui.select when there's
+  -- nothing to show; catch that to close the loading picker instead of
+  -- leaving it stuck on the placeholder.
+  vim.notify = function(msg, level, notify_opts)
+    if not finished then
+      finished = true
+      restore()
+      pcall(actions.close, picker.prompt_bufnr)
+    end
+    return original_notify(msg, level, notify_opts)
+  end
+
+  vim.ui.select = function(items, select_opts, on_choice)
+    finished = true
+    restore()
+
+    M._on_choice = on_choice
+
+    local entries = {}
+    for i, item in ipairs(items) do
+      entries[i] = {
+        value = item,
+        display = select_opts.format_item and select_opts.format_item(item) or tostring(item),
+      }
+    end
+
+    picker:refresh(
+      finders.new_table({
+        results = entries,
+        entry_maker = function(entry)
+          return { value = entry.value, display = entry.display, ordinal = entry.display }
+        end,
+      }),
+      { reset_prompt = true }
+    )
+  end
+
+  vim.lsp.buf.code_action()
 end
 
 return M
