@@ -113,6 +113,9 @@ require('lazy').setup({
         -- like br/com/pagbank/watchdog/...) down to a couple characters,
         -- keeping the filename itself untruncated.
         path_display = { 'shorten' },
+        -- wraps long result lines (e.g. long diagnostic/warning messages)
+        -- instead of cutting them off at the window edge.
+        wrap_results = true,
         -- follow symlinks during live_grep (ripgrep ignores them otherwise)
         -- needed for ~/v-workspace, which is made of symlinks to real repos.
         vimgrep_arguments = {
