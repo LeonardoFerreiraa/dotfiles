@@ -31,7 +31,8 @@ Na primeira vez que abrir o `nvim`, o [lazy.nvim](https://github.com/folke/lazy.
 | `<leader>l`         | Limpa o highlight de busca (`:nohls`)             |
 | `<leader>gb`        | Volta no jumplist (equivalente a `<C-o>`)         |
 | `<leader>gf`        | Avança no jumplist (equivalente a `<C-i>`)        |
-| `<leader>t`         | Abre/fecha um terminal flutuante (toggleterm)     |
+| `<leader>t`         | Abre/fecha um terminal em split horizontal (toggleterm) |
+| `<C-h>` / `<C-j>` / `<C-k>` / `<C-l>` | Navega entre painéis/splits (esquerda/baixo/cima/direita), funciona também saindo direto do terminal |
 | `-`                 | Abre o `netrw` (explorador de arquivos)           |
 
 `<leader>` é a barra de espaço (`<Space>`).
