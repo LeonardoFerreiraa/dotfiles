@@ -15,6 +15,7 @@ vim.opt.rtp:prepend(lazypath)
 local opt = vim.opt
 
 opt.number = true
+opt.relativenumber = true
 
 opt.autoindent = true
 opt.shiftwidth = 2
@@ -139,6 +140,7 @@ require('lazy').setup({
       { '<leader>fb', '<cmd>Telescope buffers<cr>', desc = 'Buffers' },
       { '<leader>fh', '<cmd>Telescope help_tags<cr>', desc = 'Help tags' },
       { '<leader>fw', '<cmd>Telescope diagnostics<cr>', desc = 'Diagnostics (warnings/errors)' },
+      { '<leader>fu', function() require('telescope.builtin').lsp_references() end, desc = 'Find usages (LSP references)' },
     },
   },
 })
@@ -167,9 +169,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    -- overrides the default `grr` (find references) to show results in the
-    -- Telescope picker instead of the quickfix list
-    vim.keymap.set('n', 'grr', require('telescope.builtin').lsp_references, opts)
   end,
 })
 

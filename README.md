@@ -21,7 +21,7 @@ Na primeira vez que abrir o `nvim`, o [lazy.nvim](https://github.com/folke/lazy.
 | `<leader>fg`        | Live grep (Telescope `live_grep`)                 |
 | `<leader>fb`        | Buffers abertos (Telescope `buffers`)             |
 | `<leader>fw`        | Warnings/erros (Telescope `diagnostics`)          |
-| `grr`               | Find usage / referências (via Telescope)          |
+| `<leader>fu`        | Find usage / referências (Telescope `lsp_references`) |
 | `gd`                | Go to definition                                  |
 | `gD`                | Go to declaration                                 |
 | `K`                 | Hover (documentação)                              |
