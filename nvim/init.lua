@@ -58,16 +58,16 @@ vim.keymap.set('n', '<leader>l', ':nohls<CR>', { silent = true })
 vim.keymap.set('n', '<leader>gb', '<C-o>', { desc = 'Jump back' })
 vim.keymap.set('n', '<leader>gf', '<C-i>', { desc = 'Jump forward' })
 
--- Pane/window navigation with Ctrl+hjkl (works from a normal split and also
--- straight out of a terminal buffer, without needing <Esc> first).
-vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Go to left window' })
-vim.keymap.set('n', '<C-j>', '<C-w>j', { desc = 'Go to window below' })
-vim.keymap.set('n', '<C-k>', '<C-w>k', { desc = 'Go to window above' })
-vim.keymap.set('n', '<C-l>', '<C-w>l', { desc = 'Go to right window' })
-vim.keymap.set('t', '<C-h>', [[<C-\><C-n><C-w>h]], { desc = 'Go to left window' })
-vim.keymap.set('t', '<C-j>', [[<C-\><C-n><C-w>j]], { desc = 'Go to window below' })
-vim.keymap.set('t', '<C-k>', [[<C-\><C-n><C-w>k]], { desc = 'Go to window above' })
-vim.keymap.set('t', '<C-l>', [[<C-\><C-n><C-w>l]], { desc = 'Go to right window' })
+-- Pane/window navigation with <leader>n + hjkl (works from a normal split
+-- and also straight out of a terminal buffer, without needing <Esc> first).
+vim.keymap.set('n', '<leader>nh', '<C-w>h', { desc = 'Go to left window' })
+vim.keymap.set('n', '<leader>nj', '<C-w>j', { desc = 'Go to window below' })
+vim.keymap.set('n', '<leader>nk', '<C-w>k', { desc = 'Go to window above' })
+vim.keymap.set('n', '<leader>nl', '<C-w>l', { desc = 'Go to right window' })
+vim.keymap.set('t', '<leader>nh', [[<C-\><C-n><C-w>h]], { desc = 'Go to left window' })
+vim.keymap.set('t', '<leader>nj', [[<C-\><C-n><C-w>j]], { desc = 'Go to window below' })
+vim.keymap.set('t', '<leader>nk', [[<C-\><C-n><C-w>k]], { desc = 'Go to window above' })
+vim.keymap.set('t', '<leader>nl', [[<C-\><C-n><C-w>l]], { desc = 'Go to right window' })
 
 -- Terminal buffers (toggleterm) should behave like a normal buffer with
 -- normal/insert/visual modes: <Space> should not be hijacked by leader while
