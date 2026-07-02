@@ -29,6 +29,8 @@ Na primeira vez que abrir o `nvim`, o [lazy.nvim](https://github.com/folke/lazy.
 | `gD`                | Go to declaration                                 |
 | `K`                 | Hover (documentação)                              |
 | `<leader>l`         | Limpa o highlight de busca (`:nohls`)             |
+| `<leader>gb`        | Volta no jumplist (equivalente a `<C-o>`)         |
+| `<leader>gf`        | Avança no jumplist (equivalente a `<C-i>`)        |
 | `-`                 | Abre o `netrw` (explorador de arquivos)           |
 
 `<leader>` é a barra de espaço (`<Space>`).
