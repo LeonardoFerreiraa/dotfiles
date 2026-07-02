@@ -139,12 +139,81 @@ function M.references()
   end)
 end
 
--- Same as vim.lsp.buf.code_action(), but shows the choices in a Telescope
--- picker (with the same instant-loading UX) instead of vim.ui.select's
--- default menu. Reuses the real vim.lsp.buf.code_action() implementation
--- (correct per-diagnostic context, multi-client support, codeAction/resolve,
--- applying edits/commands) by temporarily intercepting vim.ui.select.
+-- Same as vim.lsp.buf.code_action(), but built independently (rather than
+-- delegating to it) so it can capture the origin buffer/window/cursor
+-- *before* opening the Telescope picker. vim.lsp.buf.code_action() always
+-- operates on nvim_get_current_buf()/nvim_get_current_win(), and opening a
+-- Telescope picker moves focus (and closes the picker if focus moves away
+-- again), so delegating to it after picker:find() doesn't work.
 function M.code_actions()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local winnr = vim.api.nvim_get_current_win()
+  local lnum = vim.api.nvim_win_get_cursor(winnr)[1] - 1
+
+  local clients = vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/codeAction' })
+  if #clients == 0 then
+    vim.notify('Nenhum servidor LSP com suporte a code actions neste buffer.', vim.log.levels.WARN)
+    return
+  end
+
+  local diagnostics = vim.tbl_map(function(d)
+    return d.user_data and d.user_data.lsp or d
+  end, vim.diagnostic.get(bufnr, { lnum = lnum }))
+
+  local function params_fn(client)
+    local range_params = vim.lsp.util.make_range_params(winnr, client.offset_encoding)
+    range_params.context = {
+      diagnostics = diagnostics,
+      triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked,
+    }
+    return range_params
+  end
+
+  local function apply_action(action, client, ctx)
+    if action.edit then
+      vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+    end
+    local a_cmd = action.command
+    if a_cmd then
+      local command = type(a_cmd) == 'table' and a_cmd or action
+      client:exec_cmd(command, ctx)
+    end
+  end
+
+  local function on_choice(item)
+    local client = vim.lsp.get_client_by_id(item.ctx.client_id)
+    if not client then
+      return
+    end
+    local action = item.action
+
+    if type(action.title) == 'string' and type(action.command) == 'string' then
+      apply_action(action, client, item.ctx)
+      return
+    end
+
+    if action.disabled then
+      vim.notify(action.disabled.reason, vim.log.levels.ERROR)
+      return
+    end
+
+    if not (action.edit and action.command) and client:supports_method('codeAction/resolve') then
+      client:request('codeAction/resolve', action, function(err, resolved_action)
+        if err then
+          if action.edit or action.command then
+            apply_action(action, client, item.ctx)
+          else
+            vim.notify(err.code .. ': ' .. err.message, vim.log.levels.ERROR)
+          end
+        else
+          apply_action(resolved_action, client, item.ctx)
+        end
+      end, item.ctx.bufnr)
+    else
+      apply_action(action, client, item.ctx)
+    end
+  end
+
   local picker = pickers.new({}, {
     prompt_title = 'Code Actions',
     finder = loading_finder(),
@@ -153,8 +222,8 @@ function M.code_actions()
       actions.select_default:replace(function()
         local entry = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        if entry and entry.value and M._on_choice then
-          M._on_choice(entry.value)
+        if entry and entry.value then
+          on_choice(entry.value)
         end
       end)
       return true
@@ -162,54 +231,38 @@ function M.code_actions()
   })
   picker:find()
 
-  local original_ui_select = vim.ui.select
-  local original_notify = vim.notify
-  local finished = false
-
-  local function restore()
-    vim.ui.select = original_ui_select
-    vim.notify = original_notify
-  end
-
-  -- vim.lsp.buf.code_action() calls vim.notify('No code actions available', ...)
-  -- (or an "unsupported method" warning) instead of vim.ui.select when there's
-  -- nothing to show; catch that to close the loading picker instead of
-  -- leaving it stuck on the placeholder.
-  vim.notify = function(msg, level, notify_opts)
-    if not finished then
-      finished = true
-      restore()
-      pcall(actions.close, picker.prompt_bufnr)
+  vim.lsp.buf_request_all(bufnr, 'textDocument/codeAction', params_fn, function(results)
+    local items = {}
+    for client_id, result in pairs(results) do
+      local client = vim.lsp.get_client_by_id(client_id)
+      for _, action in ipairs(result.result or {}) do
+        local title = action.title:gsub('\r\n', '\\r\\n'):gsub('\n', '\\n')
+        if #clients > 1 and client then
+          title = title .. ' [' .. client.name .. ']'
+        end
+        table.insert(items, {
+          value = { action = action, ctx = result.context },
+          display = title,
+        })
+      end
     end
-    return original_notify(msg, level, notify_opts)
-  end
 
-  vim.ui.select = function(items, select_opts, on_choice)
-    finished = true
-    restore()
-
-    M._on_choice = on_choice
-
-    local entries = {}
-    for i, item in ipairs(items) do
-      entries[i] = {
-        value = item,
-        display = select_opts.format_item and select_opts.format_item(item) or tostring(item),
-      }
+    if #items == 0 then
+      pcall(actions.close, picker.prompt_bufnr)
+      vim.notify('Nenhuma code action disponível.', vim.log.levels.INFO)
+      return
     end
 
     picker:refresh(
       finders.new_table({
-        results = entries,
+        results = items,
         entry_maker = function(entry)
           return { value = entry.value, display = entry.display, ordinal = entry.display }
         end,
       }),
       { reset_prompt = true }
     )
-  end
-
-  vim.lsp.buf.code_action()
+  end)
 end
 
 return M
