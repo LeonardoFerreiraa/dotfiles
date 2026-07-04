@@ -5,7 +5,7 @@
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'java',
   callback = function(args)
-    require('jdtls_config').setup()
+    require('jdtls_config').setup(args.buf)
     vim.api.nvim_buf_create_user_command(args.buf, 'JavaSetJdk', function()
       require('jdtls_config').pick_jdk_and_start()
     end, { desc = 'Pick a JDK (via cli-assistant) and (re)start jdtls' })
@@ -46,5 +46,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
       require('lsp_extras').code_actions,
       vim.tbl_extend('force', opts, { desc = 'Code actions (Telescope, com loading)' })
     )
+    vim.keymap.set('n', '<leader>cf', function()
+      vim.lsp.buf.format({ async = true })
+    end, vim.tbl_extend('force', opts, { desc = 'Format document' }))
   end,
 })

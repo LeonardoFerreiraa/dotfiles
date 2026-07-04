@@ -2,6 +2,87 @@ local M = {}
 
 local CLI_ASSISTANT_BIN = vim.fn.expand('~/.local/libexec/cli-assistant/cli-assistant')
 
+-- Eclipse's formatter (used by jdtls) only understands its own XML profile
+-- format or a project's .settings/org.eclipse.jdt.core.prefs. The base
+-- codestyle (brace position, wrapping, import order, etc.) comes from a
+-- full Eclipse profile checked into the dotfiles repo.
+--
+-- Indentation (tab vs space, size) is NOT controlled by this XML in
+-- practice: the LSP textDocument/formatting request always carries
+-- required FormattingOptions.tabSize/insertSpaces fields (derived by
+-- Neovim from the buffer's 'shiftwidth'/'expandtab'), and jdtls prioritizes
+-- those request-level values over whatever the profile XML says for the
+-- equivalent tabulation.size/tabulation.char keys. So indentation is
+-- handled separately, as buffer-local vim options (see
+-- apply_indentation_defaults below) — the XML's own tabulation settings
+-- are effectively a dead letter and not worth fighting.
+local BASE_CODESTYLE_XML = vim.fn.stdpath('config') .. '/codestyle/eclipse-profile.xml'
+
+-- Extracts { [setting_id] = value } from an Eclipse formatter profile XML.
+local function parse_formatter_xml(path)
+  local settings = {}
+  local f = io.open(path, 'r')
+  if not f then
+    return settings
+  end
+  local content = f:read('*a')
+  f:close()
+  for id, value in content:gmatch('<setting%s+id="([^"]+)"%s+value="([^"]*)"%s*/>') do
+    settings[id] = value
+  end
+  return settings
+end
+
+-- Writes the base codestyle profile to the jdtls workspace dir (cache,
+-- outside the project — never versioned with it) and returns the
+-- java.format settings pointing at it. Returns nil when the base codestyle
+-- XML is missing, so callers fall back to jdtls's own default profile.
+local function formatter_settings(workspace_dir)
+  local settings = parse_formatter_xml(BASE_CODESTYLE_XML)
+  if vim.tbl_isempty(settings) then
+    return nil
+  end
+
+  local lines = { '<?xml version="1.0" encoding="UTF-8" standalone="no"?>', '<profiles version="1">',
+    '<profile kind="CodeFormatterProfile" name="dotfiles" version="1">' }
+  for id, value in pairs(settings) do
+    table.insert(lines, string.format('<setting id="%s" value="%s"/>', id, value))
+  end
+  table.insert(lines, '</profile>')
+  table.insert(lines, '</profiles>')
+
+  vim.fn.mkdir(workspace_dir, 'p')
+  local xml_path = workspace_dir .. '/formatter-profile.xml'
+  vim.fn.writefile(lines, xml_path)
+
+  return { settings = { url = xml_path, profile = 'dotfiles' } }
+end
+
+-- Sets 'shiftwidth'/'tabstop'/'expandtab' for the buffer from the base
+-- codestyle's tabulation.size/tabulation.char, so the LSP format request's
+-- (required) tabSize/insertSpaces fields match the project's real style
+-- instead of the editor's own global default. Skipped when the buffer
+-- already has a resolved .editorconfig with its own indent properties
+-- (`vim.b[bufnr].editorconfig`, set by Neovim before FileType fires) —
+-- that's project-specific and takes priority over the dotfiles base.
+local function apply_indentation_defaults(bufnr)
+  local ec = vim.b[bufnr] and vim.b[bufnr].editorconfig
+  if ec and (ec.indent_style or ec.indent_size or ec.tab_width) then
+    return
+  end
+
+  local settings = parse_formatter_xml(BASE_CODESTYLE_XML)
+  local size = tonumber(settings['org.eclipse.jdt.core.formatter.tabulation.size'])
+  local char = settings['org.eclipse.jdt.core.formatter.tabulation.char']
+  if not size then
+    return
+  end
+
+  vim.bo[bufnr].shiftwidth = size
+  vim.bo[bufnr].tabstop = size
+  vim.bo[bufnr].expandtab = char ~= 'tab'
+end
+
 -- Lists JDK versions installed via cli-assistant, e.g. { 11, 17, 21, ... }.
 local function list_installed_jdks()
   if vim.fn.executable(CLI_ASSISTANT_BIN) == 0 then
@@ -47,7 +128,9 @@ function M.reindex()
   require('jdtls.setup').wipe_data_and_restart()
 end
 
-function M.setup()
+function M.setup(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  apply_indentation_defaults(bufnr)
   local jdtls = require('jdtls')
 
   local mason_registry = require('mason-registry')
@@ -112,6 +195,7 @@ function M.setup()
       java = {
         signatureHelp = { enabled = true },
         completion = { favoriteStaticMembers = {} },
+        format = formatter_settings(workspace_dir),
       },
     },
     init_options = {

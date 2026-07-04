@@ -21,6 +21,7 @@ local defs = {
 
   -- lsp
   { keys = '<leader>ca', desc = 'code actions' },
+  { keys = '<leader>cf', desc = 'format document' },
   { keys = '<leader>sd', desc = 'show diagnostic' },
   { keys = 'K',          desc = 'show documentation' },
   { keys = '<leader>l',  desc = 'clean highlight' },

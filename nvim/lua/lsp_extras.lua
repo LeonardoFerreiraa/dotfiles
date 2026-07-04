@@ -151,7 +151,8 @@ function M.code_actions()
   local lnum = vim.api.nvim_win_get_cursor(winnr)[1] - 1
 
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/codeAction' })
-  if #clients == 0 then
+  local can_format = #vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/formatting' }) > 0
+  if #clients == 0 and not can_format then
     vim.notify('Nenhum servidor LSP com suporte a code actions neste buffer.', vim.log.levels.WARN)
     return
   end
@@ -181,6 +182,11 @@ function M.code_actions()
   end
 
   local function on_choice(item)
+    if item.format then
+      vim.lsp.buf.format({ bufnr = bufnr, async = true })
+      return
+    end
+
     local client = vim.lsp.get_client_by_id(item.ctx.client_id)
     if not client then
       return
@@ -231,21 +237,16 @@ function M.code_actions()
   })
   picker:find()
 
-  vim.lsp.buf_request_all(bufnr, 'textDocument/codeAction', params_fn, function(results)
+  -- "Format Document" isn't a real LSP code action (formatting is its own
+  -- protocol method, textDocument/formatting), so it's synthesized here and
+  -- prepended to whatever real code actions come back, to keep both
+  -- accessible from a single picker.
+  local function finish(action_items)
     local items = {}
-    for client_id, result in pairs(results) do
-      local client = vim.lsp.get_client_by_id(client_id)
-      for _, action in ipairs(result.result or {}) do
-        local title = action.title:gsub('\r\n', '\\r\\n'):gsub('\n', '\\n')
-        if #clients > 1 and client then
-          title = title .. ' [' .. client.name .. ']'
-        end
-        table.insert(items, {
-          value = { action = action, ctx = result.context },
-          display = title,
-        })
-      end
+    if can_format then
+      table.insert(items, { value = { format = true }, display = 'Format Document' })
     end
+    vim.list_extend(items, action_items)
 
     if #items == 0 then
       pcall(actions.close, picker.prompt_bufnr)
@@ -262,6 +263,30 @@ function M.code_actions()
       }),
       { reset_prompt = true }
     )
+  end
+
+  if #clients == 0 then
+    finish({})
+    return
+  end
+
+  vim.lsp.buf_request_all(bufnr, 'textDocument/codeAction', params_fn, function(results)
+    local action_items = {}
+    for client_id, result in pairs(results) do
+      local client = vim.lsp.get_client_by_id(client_id)
+      for _, action in ipairs(result.result or {}) do
+        local title = action.title:gsub('\r\n', '\\r\\n'):gsub('\n', '\\n')
+        if #clients > 1 and client then
+          title = title .. ' [' .. client.name .. ']'
+        end
+        table.insert(action_items, {
+          value = { action = action, ctx = result.context },
+          display = title,
+        })
+      end
+    end
+
+    finish(action_items)
   end)
 end
 
