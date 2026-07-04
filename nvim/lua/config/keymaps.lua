@@ -25,4 +25,10 @@ vim.keymap.set('n', '<leader>nl', '<C-w>l', { desc = 'Go to right window' })
 vim.keymap.set('n', '<leader>gh', '^', { desc = 'Go to line start' })
 vim.keymap.set('n', '<leader>gl', '$', { desc = 'Go to line end' })
 
+-- Remap Home/End keys (Mac-friendly)
+vim.keymap.set('n', '<Home>', '^', { desc = 'Go to line start' })
+vim.keymap.set('n', '<End>', '$', { desc = 'Go to line end' })
+vim.keymap.set('i', '<Home>', '<C-o>^', { desc = 'Go to line start' })
+vim.keymap.set('i', '<End>', '<C-o>$', { desc = 'Go to line end' })
+
 -- `-` opens the parent directory in oil (see lua/plugins/oil.lua).

@@ -12,12 +12,12 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Editor settings, keymaps and autocmds. config.keymaps sets mapleader, so it
--- must run before lazy.setup() below: lazy expands <leader> in plugin `keys`
--- specs at load time, and would otherwise use the wrong leader.
+-- Editor settings and keymaps. config.keymaps sets mapleader, so it must run
+-- before lazy.setup() below: lazy expands <leader> in plugin `keys` specs at
+-- load time, and would otherwise use the wrong leader.
 require('config.options')
 require('config.keymaps')
-require('config.autocmds')
+require('buffers')
 
 -- Plugin specs live in lua/plugins/*.lua (one file/group per return table).
 require('lazy').setup('plugins')

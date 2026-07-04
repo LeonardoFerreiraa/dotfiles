@@ -4,6 +4,10 @@ return {
   dependencies = { 'nvim-lua/plenary.nvim' },
   opts = {
     defaults = {
+      -- prompt (search bar) at the top instead of the bottom, with results
+      -- listed top-down so the best match sits right under the prompt.
+      layout_config = { prompt_position = 'top' },
+      sorting_strategy = 'ascending',
       -- shortens each directory segment of the path (e.g. Java packages
       -- like br/com/pagbank/watchdog/...) down to a couple characters,
       -- keeping the filename itself untruncated.
@@ -30,6 +34,23 @@ return {
         -- ~/v-workspace.
         find_command = { 'rg', '--files', '--hidden', '--follow', '--glob', '!.git/*' },
       },
+      buffers = {
+        -- dd (normal mode, like deleting a line) closes the buffer under
+        -- the cursor without leaving the picker (not mapped by default in
+        -- this telescope version). Wrapped in a function so the `require`
+        -- only runs when pressed, since telescope.nvim isn't guaranteed to
+        -- be on the runtimepath yet when this spec table is built.
+        mappings = {
+          n = {
+            ['dd'] = function(...) return require('telescope.actions').delete_buffer(...) end,
+            -- w saves the buffer under the cursor without leaving the picker.
+            ['w'] = function()
+              local selection = require('telescope.actions.state').get_selected_entry()
+              vim.api.nvim_buf_call(selection.bufnr, function() vim.cmd('write') end)
+            end,
+          },
+        },
+      },
     },
   },
   keys = {
@@ -39,5 +60,6 @@ return {
     { '<leader>fh', '<cmd>Telescope help_tags<cr>', desc = 'Help tags' },
     { '<leader>fw', '<cmd>Telescope diagnostics<cr>', desc = 'Diagnostics (warnings/errors)' },
     { '<leader>fu', function() require('lsp_extras').references() end, desc = 'Find usages (LSP references, com loading)' },
+    { '<leader><BS>', function() require('command_palette').open() end, desc = 'Command palette' },
   },
 }
