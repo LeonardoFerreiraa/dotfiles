@@ -181,6 +181,12 @@ function M.setup(bufnr)
       '-Declipse.product=org.eclipse.jdt.ls.core.product',
       '-Dlog.protocol=true',
       '-Dlog.level=ALL',
+      -- keeps .project/.classpath/.settings out of the project root, inside
+      -- the jdtls workspace dir instead (like IntelliJ's .idea). The
+      -- equivalent `settings.java.import.generatesMetadataFilesAtProjectRoot`
+      -- key is unreliable (redhat-developer/vscode-java#2929) — this JVM
+      -- system property form is honored consistently.
+      '-Djava.import.generatesMetadataFilesAtProjectRoot=false',
       '-javaagent:' .. jdtls_path .. '/lombok.jar',
       '-Xmx1g',
       '--add-modules=ALL-SYSTEM',
@@ -196,6 +202,7 @@ function M.setup(bufnr)
         signatureHelp = { enabled = true },
         completion = { favoriteStaticMembers = {} },
         format = formatter_settings(workspace_dir),
+        import = { generatesMetadataFilesAtProjectRoot = false },
       },
     },
     init_options = {
