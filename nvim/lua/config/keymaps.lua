@@ -37,4 +37,8 @@ vim.keymap.set('i', '<End>', '<C-o>$', { desc = 'Go to line end' })
 vim.keymap.set('i', '<C-Left>', '<C-o>b', { desc = 'Jump word back' })
 vim.keymap.set('i', '<C-Right>', '<C-o>w', { desc = 'Jump word forward' })
 
+vim.keymap.set('n', '<Esc>', ':silent! update<CR>', { desc = 'Save (Esc in Normal mode)' })
+
+vim.keymap.set('x', 'p', '"_dP', { desc = 'Paste over selection without yanking it' })
+
 -- `-` opens the parent directory in oil (see lua/plugins/oil.lua).

@@ -28,6 +28,12 @@ opt.mousehide = true
 opt.swapfile = false
 opt.autoread = true
 
+opt.clipboard = 'unnamedplus'
+
+opt.undofile = true
+opt.undodir = vim.fn.stdpath('data') .. '/undodir'
+opt.undolevels = 1000
+
 opt.diffopt:append('vertical')
 
 opt.list = true
