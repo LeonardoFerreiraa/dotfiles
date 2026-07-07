@@ -31,4 +31,10 @@ vim.keymap.set('n', '<End>', '$', { desc = 'Go to line end' })
 vim.keymap.set('i', '<Home>', '<C-o>^', { desc = 'Go to line start' })
 vim.keymap.set('i', '<End>', '<C-o>$', { desc = 'Go to line end' })
 
+-- Ctrl+Left/Right jump by word in insert mode (<C-o> runs one normal-mode
+-- motion then returns to insert). `b` = start of previous word, `w` = start
+-- of next word.
+vim.keymap.set('i', '<C-Left>', '<C-o>b', { desc = 'Jump word back' })
+vim.keymap.set('i', '<C-Right>', '<C-o>w', { desc = 'Jump word forward' })
+
 -- `-` opens the parent directory in oil (see lua/plugins/oil.lua).
