@@ -26,13 +26,20 @@ return {
         '--column',
         '--smart-case',
         '--follow',
+        -- honor .gitignore/.ignore even when the dir isn't a git repo (rg's
+        -- default --require-git skips them without a .git, so build output
+        -- like build/ and *.class would otherwise leak into results).
+        '--no-require-git',
       },
     },
     pickers = {
       find_files = {
         -- same reasoning: follow symlinks so find_files works inside
         -- ~/v-workspace.
-        find_command = { 'rg', '--files', '--hidden', '--follow', '--glob', '!.git/*' },
+        -- !*.class drops compiled artifacts that slip through when a build
+        -- output dir isn't gitignored (e.g. Eclipse/VSCode's bin/) — never a
+        -- find-files target regardless of git state.
+        find_command = { 'rg', '--files', '--hidden', '--follow', '--no-require-git', '--glob', '!.git/*', '--glob', '!*.class' },
       },
       buffers = {
         -- dd (normal mode, like deleting a line) closes the buffer under

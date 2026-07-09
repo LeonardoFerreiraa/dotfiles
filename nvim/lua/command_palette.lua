@@ -20,11 +20,12 @@ local defs = {
   { keys = '<leader>fd', desc = { 'go to definitions', 'go to declarations' } },
 
   -- lsp
-  { keys = '<leader>ca', desc = 'code actions' },
-  { keys = '<leader>cf', desc = 'format document' },
-  { keys = '<leader>sd', desc = 'show diagnostic' },
-  { keys = 'K',          desc = 'show documentation' },
-  { keys = '<leader>l',  desc = 'clean highlight' },
+  { keys = '<leader>ca',      desc = 'code actions' },
+  { keys = '<leader>cf',      desc = 'format document' },
+  { keys = '<leader>sd',      desc = 'show diagnostic' },
+  { keys = 'K',               desc = 'show documentation' },
+  { keys = '<leader>l',       desc = 'clean highlight' },
+  { keys = ':FindMethod<CR>', desc = 'find method' },
 
   -- jumps
   { keys = '<leader>gb', desc = 'go back' },

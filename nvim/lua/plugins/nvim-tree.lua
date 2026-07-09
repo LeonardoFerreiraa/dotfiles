@@ -50,6 +50,27 @@ return {
           -- side panel to keep itself open. Gives netrw's open-in-same-window
           -- feel.
           quit_on_open = true,
+          -- With a debug session running, dap-ui opens several panels
+          -- (scopes/stacks/breakpoints/watches/repl/console). nvim-tree then
+          -- sees multiple candidate windows and prompts "pick a window" for
+          -- where to open the file. Exclude the dap-ui panels (and terminal
+          -- buffers, i.e. the repl/console) so only the real code window is
+          -- eligible — the file opens there directly, no prompt.
+          window_picker = {
+            enable = true,
+            exclude = {
+              filetype = {
+                'dapui_scopes',
+                'dapui_breakpoints',
+                'dapui_stacks',
+                'dapui_watches',
+                'dapui_console',
+                'dapui_hover',
+                'dap-repl',
+              },
+              buftype = { 'terminal', 'nofile' },
+            },
+          },
         },
       },
     })

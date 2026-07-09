@@ -83,6 +83,36 @@ local function apply_indentation_defaults(bufnr)
   vim.bo[bufnr].expandtab = char ~= 'tab'
 end
 
+-- Collects the debug adapter + JUnit runner jars (installed by Mason via
+-- mason-tool-installer, see lua/plugins/dap.lua) to hand to jdtls as bundles.
+-- Loaded into the running jdtls server (init_options.bundles) so debug/test
+-- run through the same process as LSP — no second server. Returns {} when the
+-- packages aren't installed yet, so jdtls still starts (just without debug).
+local function debug_bundles()
+  local mason_registry = require('mason-registry')
+  local bundles = {}
+
+  local ok_dbg, dbg = pcall(function()
+    return mason_registry.get_package('java-debug-adapter'):get_install_path()
+  end)
+  if ok_dbg then
+    local jar = vim.fn.glob(dbg .. '/extension/server/com.microsoft.java.debug.plugin-*.jar')
+    vim.list_extend(bundles, vim.split(jar, '\n', { trimempty = true }))
+  end
+
+  -- java-test contributes the JUnit/TestNG bundles used to debug individual
+  -- tests (setup_dap_main_class_configs picks these up).
+  local ok_test, test = pcall(function()
+    return mason_registry.get_package('java-test'):get_install_path()
+  end)
+  if ok_test then
+    local jars = vim.fn.glob(test .. '/extension/server/*.jar')
+    vim.list_extend(bundles, vim.split(jars, '\n', { trimempty = true }))
+  end
+
+  return bundles
+end
+
 -- Lists JDK versions installed via cli-assistant, e.g. { 11, 17, 21, ... }.
 local function list_installed_jdks()
   if vim.fn.executable(CLI_ASSISTANT_BIN) == 0 then
@@ -200,14 +230,23 @@ function M.setup(bufnr)
     settings = {
       java = {
         signatureHelp = { enabled = true },
-        completion = { favoriteStaticMembers = {} },
+        completion = { favoriteStaticMembers = {}, maxResults = 0 },
         format = formatter_settings(workspace_dir),
         import = { generatesMetadataFilesAtProjectRoot = false },
       },
     },
     init_options = {
-      bundles = {},
+      bundles = debug_bundles(),
     },
+    -- Activate nvim-dap integration once jdtls attaches: setup_dap wires the
+    -- java debug adapter, and setup_dap_main_class_configs asks jdtls to
+    -- resolve runnable main classes + JUnit configs (so <leader>dc lists them
+    -- without hand-written launch.json). Runs a jdtls resolve command, so it
+    -- must happen after attach, not before the server exists.
+    on_attach = function()
+      require('jdtls').setup_dap({ hotcodereplace = 'auto' })
+      require('jdtls.dap').setup_dap_main_class_configs()
+    end,
   }
 
   jdtls.start_or_attach(config)

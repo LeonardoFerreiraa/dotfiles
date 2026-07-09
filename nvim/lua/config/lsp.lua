@@ -15,6 +15,13 @@ vim.api.nvim_create_autocmd('FileType', {
   end,
 })
 
+-- Language-agnostic: dispatches to a provider by the buffer's filetype (java
+-- for now). Global so it works from the command palette in any buffer;
+-- find_method guards when no provider/LSP matches.
+vim.api.nvim_create_user_command('FindMethod', function()
+  require('find_method').open()
+end, { desc = 'Find & jump to a public method/member of any reachable class' })
+
 -- <leader>sd (show diagnostic) replaces the default `<C-w>d`; unmap the
 -- global default once (works on any buffer, not just LSP-attached ones,
 -- since diagnostics can also come from non-LSP sources).

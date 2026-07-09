@@ -22,8 +22,8 @@ vim.keymap.set('n', '<leader>nl', '<C-w>l', { desc = 'Go to right window' })
 -- then <leader>nh/j/k/l from there.
 
 -- Line start/end navigation with <leader>g + h/l
-vim.keymap.set('n', '<leader>gh', '^', { desc = 'Go to line start' })
-vim.keymap.set('n', '<leader>gl', '$', { desc = 'Go to line end' })
+vim.keymap.set({ 'n', 'v' }, '<leader>gh', '^', { desc = 'Go to line start' })
+vim.keymap.set({ 'n', 'v' }, '<leader>gl', '$', { desc = 'Go to line end' })
 
 -- Remap Home/End keys (Mac-friendly)
 vim.keymap.set('n', '<Home>', '^', { desc = 'Go to line start' })
