@@ -13,17 +13,7 @@ local conf = require('telescope.config').values
 local make_entry = require('telescope.make_entry')
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
-
-local LOADING_TEXT = 'Buscando, aguarde…'
-
-local function loading_finder()
-  return finders.new_table({
-    results = { LOADING_TEXT },
-    entry_maker = function(line)
-      return { value = line, display = line, ordinal = line }
-    end,
-  })
-end
+local loading = require('telescope_loading')
 
 -- Opens a Telescope picker right away with a loading placeholder, then calls
 -- `request(on_result)` to fetch the real data asynchronously. `on_result`
@@ -32,7 +22,7 @@ end
 local function open_async_picker(prompt_title, request)
   local picker = pickers.new({}, {
     prompt_title = prompt_title,
-    finder = loading_finder(),
+    finder = loading.finder(),
     sorter = conf.generic_sorter({}),
     previewer = conf.qflist_previewer({}),
   })
@@ -222,7 +212,7 @@ function M.code_actions()
 
   local picker = pickers.new({}, {
     prompt_title = 'Code Actions',
-    finder = loading_finder(),
+    finder = loading.finder(),
     sorter = conf.generic_sorter({}),
     attach_mappings = function(prompt_bufnr, _)
       actions.select_default:replace(function()

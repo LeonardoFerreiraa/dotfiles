@@ -135,63 +135,59 @@ local function extract_signature(markdown, provider, fqn)
   return provider.clean_signature(sig, fqn)
 end
 
--- Opens the Telescope "find method" picker: type in the prompt to fuzzy filter
--- the signature list, the previewer shows the selected member's full doc, and
--- <CR> jumps to the member in its source. `entries` = { sig, doc, uri, range }.
-local function open_methods_picker(fqn, entries, offset_encoding)
+-- Opens the Telescope "find method" picker right away with a loading
+-- placeholder (matching lsp_extras.lua's pickers), to be refreshed with the
+-- real signature list once fetch_and_show's hovers come back. Typing in the
+-- prompt fuzzy filters the signature list, the previewer shows the selected
+-- member's full doc, and <CR> jumps to the member in its source.
+local function open_methods_picker(fqn, offset_encoding)
   local pickers = require('telescope.pickers')
-  local finders = require('telescope.finders')
   local conf = require('telescope.config').values
   local previewers = require('telescope.previewers')
   local actions = require('telescope.actions')
   local action_state = require('telescope.actions.state')
+  local loading = require('telescope_loading')
 
-  pickers
-    .new({}, {
-      prompt_title = fqn,
-      finder = finders.new_table({
-        results = entries,
-        entry_maker = function(e)
-          return { value = e, display = e.sig, ordinal = e.sig }
-        end,
-      }),
-      sorter = conf.generic_sorter({}),
-      attach_mappings = function(prompt_bufnr)
-        actions.select_default:replace(function()
-          local entry = action_state.get_selected_entry()
-          actions.close(prompt_bufnr)
-          if entry and entry.value.uri then
-            vim.lsp.util.show_document(
-              { uri = entry.value.uri, range = entry.value.range },
-              offset_encoding,
-              { reuse_win = true, focus = true }
-            )
-          end
-        end)
-        return true
+  local picker = pickers.new({}, {
+    prompt_title = fqn,
+    finder = loading.finder(),
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr)
+      actions.select_default:replace(function()
+        local entry = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        if entry and type(entry.value) == 'table' and entry.value.uri then
+          vim.lsp.util.show_document(
+            { uri = entry.value.uri, range = entry.value.range },
+            offset_encoding,
+            { reuse_win = true, focus = true }
+          )
+        end
+      end)
+      return true
+    end,
+    previewer = previewers.new_buffer_previewer({
+      title = 'Doc',
+      define_preview = function(self, entry)
+        local md = type(entry.value) == 'table' and (entry.value.doc or entry.value.sig) or entry.value
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.split(md, '\n', { plain = true }))
+        vim.bo[self.state.bufnr].filetype = 'markdown'
+        vim.wo[self.state.winid].wrap = true
+        vim.wo[self.state.winid].conceallevel = 2
+        pcall(vim.treesitter.start, self.state.bufnr, 'markdown')
       end,
-      previewer = previewers.new_buffer_previewer({
-        title = 'Doc',
-        define_preview = function(self, entry)
-          local md = entry.value.doc or entry.value.sig
-          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.split(md, '\n', { plain = true }))
-          vim.bo[self.state.bufnr].filetype = 'markdown'
-          vim.wo[self.state.winid].wrap = true
-          vim.wo[self.state.winid].conceallevel = 2
-          pcall(vim.treesitter.start, self.state.bufnr, 'markdown')
-        end,
-      }),
-    })
-    :find()
+    }),
+  })
+  picker:find()
+  return picker
 end
 
--- Hovers every member in parallel (signature + doc), then opens the picker
--- once all responses are in (source order preserved).
-local function fetch_and_show(provider, class_bufnr, uri, item, methods)
+-- Hovers every member in parallel (signature + doc), then refreshes the
+-- already-open picker once all responses are in (source order preserved).
+local function fetch_and_show(provider, class_bufnr, uri, item, methods, picker)
+  local finders = require('telescope.finders')
   local entries = {}
   local pending = #methods
-  local client = get_client(class_bufnr, provider)
-  local offset_encoding = client and client.offset_encoding or 'utf-16'
 
   for i, method in ipairs(methods) do
     local params = {
@@ -215,30 +211,44 @@ local function fetch_and_show(provider, class_bufnr, uri, item, methods)
             table.insert(ordered, entries[j])
           end
         end
-        open_methods_picker(item.fqn, ordered, offset_encoding)
+        picker:refresh(
+          finders.new_table({
+            results = ordered,
+            entry_maker = function(e)
+              return { value = e, display = e.sig, ordinal = e.sig }
+            end,
+          }),
+          { reset_prompt = true }
+        )
       end
     end)
   end
 end
 
 -- Loads the class, enumerates its public members via documentSymbol (visibility
--- decided by the provider), then hands off to fetch_and_show.
+-- decided by the provider), then hands off to fetch_and_show. Opens the
+-- picker immediately (loading placeholder) so selecting a class gives
+-- instant feedback instead of nothing happening while jdtls responds.
 local function show_methods(provider, item)
-  vim.notify('Carregando métodos de ' .. item.fqn .. '…', vim.log.levels.INFO)
   local class_bufnr = load_class_buffer(item.uri)
   if not class_bufnr then
     vim.notify('LSP não anexou ao carregar ' .. item.fqn, vim.log.levels.ERROR)
     return
   end
+  local client = get_client(class_bufnr, provider)
+  local offset_encoding = client and client.offset_encoding or 'utf-16'
+  local picker = open_methods_picker(item.fqn, offset_encoding)
 
   local params = { textDocument = { uri = item.uri } }
   vim.lsp.buf_request(class_bufnr, 'textDocument/documentSymbol', params, function(err, result)
     if err or not result then
+      pcall(require('telescope.actions').close, picker.prompt_bufnr)
       vim.notify('Falha ao obter símbolos de ' .. item.fqn, vim.log.levels.ERROR)
       return
     end
     local class_sym = find_class_symbol(result, item.name)
     if not class_sym then
+      pcall(require('telescope.actions').close, picker.prompt_bufnr)
       vim.notify('Classe ' .. item.name .. ' não encontrada nos símbolos.', vim.log.levels.ERROR)
       return
     end
@@ -249,10 +259,11 @@ local function show_methods(provider, item)
       end
     end
     if #methods == 0 then
+      pcall(require('telescope.actions').close, picker.prompt_bufnr)
       vim.notify('Nenhum método público encontrado em ' .. item.fqn, vim.log.levels.INFO)
       return
     end
-    fetch_and_show(provider, class_bufnr, item.uri, item, methods)
+    fetch_and_show(provider, class_bufnr, item.uri, item, methods, picker)
   end)
 end
 
@@ -288,7 +299,14 @@ function M.run(provider)
           local entry = action_state.get_selected_entry()
           actions.close(prompt_bufnr)
           if entry and entry.value then
-            show_methods(provider, entry.value)
+            -- Opening a picker synchronously here now races the previous
+            -- picker's close (it used to be safe because show_methods only
+            -- opened a picker later, after the LSP round trip; now it opens
+            -- one immediately for the loading placeholder). Defer a tick so
+            -- the close finishes first.
+            vim.schedule(function()
+              show_methods(provider, entry.value)
+            end)
           end
         end)
         return true
