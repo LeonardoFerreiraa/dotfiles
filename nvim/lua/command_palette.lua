@@ -26,6 +26,7 @@ local defs = {
   { keys = 'K',               desc = 'show documentation' },
   { keys = '<leader>l',       desc = 'clean highlight' },
   { keys = ':FindMethod<CR>', desc = 'find method' },
+  { keys = ':CopyFQN<CR>',    desc = 'copy fqn' },
 
   -- jumps
   { keys = '<leader>gb', desc = 'go back' },

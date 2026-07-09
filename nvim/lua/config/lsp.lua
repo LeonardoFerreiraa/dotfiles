@@ -22,6 +22,10 @@ vim.api.nvim_create_user_command('FindMethod', function()
   require('find_method').open()
 end, { desc = 'Find & jump to a public method/member of any reachable class' })
 
+vim.api.nvim_create_user_command('CopyFQN', function()
+  require('copy_fqn').run()
+end, { desc = 'Copy fully-qualified name/reference of the symbol under the cursor' })
+
 -- <leader>sd (show diagnostic) replaces the default `<C-w>d`; unmap the
 -- global default once (works on any buffer, not just LSP-attached ones,
 -- since diagnostics can also come from non-LSP sources).
