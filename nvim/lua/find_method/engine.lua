@@ -90,11 +90,19 @@ local function load_class_buffer(uri)
   return class_bufnr
 end
 
+-- jdtls's documentSymbol outline sometimes keeps generic type parameters in
+-- a class's name (e.g. "HashMap<K, V>") while workspace/symbol always
+-- returns the bare name ("HashMap"); strip them so both sides compare equal.
+local function strip_generics(name)
+  return (name:gsub('%s*<.*', ''))
+end
+
 -- Depth-first search for the DocumentSymbol node representing the target
 -- class, matched by name (handles nested types and multiple types per file).
 local function find_class_symbol(symbols, name)
+  local target = strip_generics(name)
   for _, sym in ipairs(symbols or {}) do
-    if CLASS_LIKE[sym.kind] and sym.name == name then
+    if CLASS_LIKE[sym.kind] and strip_generics(sym.name) == target then
       return sym
     end
     local found = find_class_symbol(sym.children, name)

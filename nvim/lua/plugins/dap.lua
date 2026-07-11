@@ -84,6 +84,31 @@ return {
       map({ 'n', 'v' }, '<leader>de', function()
         dapui.eval()
       end, { desc = 'DAP: eval expression under cursor' })
+      -- Mirrors dapui.util.get_current_expr() (current word / visual
+      -- selection), but using plain vim.fn instead of nio.fn: nio's async
+      -- wrappers need to run inside a nio.run coroutine (see dapui.eval),
+      -- and this keymap has no reason to be async.
+      local function current_expr()
+        if vim.fn.mode() ~= 'v' then
+          return vim.fn.expand('<cexpr>')
+        end
+        local s_line, s_col = unpack(vim.fn.getpos('v'), 2, 3)
+        local e_line, e_col = unpack(vim.fn.getpos('.'), 2, 3)
+        if s_line > e_line or (s_line == e_line and s_col > e_col) then
+          s_line, e_line, s_col, e_col = e_line, s_line, e_col, s_col
+        end
+        local lines = vim.fn.getline(s_line, e_line)
+        if #lines == 0 then
+          return ''
+        end
+        lines[#lines] = lines[#lines]:sub(1, e_col)
+        lines[1] = lines[1]:sub(s_col)
+        return table.concat(lines, '\n')
+      end
+
+      map({ 'n', 'v' }, '<leader>dw', function()
+        dapui.elements.watches.add(vim.fn.input('Watch: ', current_expr()))
+      end, { desc = 'DAP: add expression to watches' })
     end,
   },
 }

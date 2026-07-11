@@ -9,9 +9,6 @@ return {
       -- accept the selected item with <Tab> (falls through to normal
       -- <Tab> behaviour when the completion menu is not open).
       ['<Tab>'] = { 'accept', 'fallback' },
-      -- <CR> accepts the selected item; falls through to a normal
-      -- newline when the menu is closed.
-      ['<CR>'] = { 'accept', 'fallback' },
       -- <Esc> closes the menu without leaving insert mode; falls
       -- through to normal <Esc> (insert -> normal) when menu is closed.
       ['<Esc>'] = { 'hide', 'fallback' },

@@ -1,3 +1,6 @@
+require('hover_box').setup()
+require('workspace_undo').setup()
+
 -- jdtls is started via a plain FileType autocmd (not ftplugin/java.lua)
 -- because Neovim loads ftplugin/*.lua before lazy.nvim finishes putting
 -- plugins on the runtimepath, causing "module 'jdtls' not found" when a
@@ -31,6 +34,13 @@ end, { desc = 'Copy fully-qualified name/reference of the symbol under the curso
 -- since diagnostics can also come from non-LSP sources).
 pcall(vim.keymap.del, 'n', '<C-w>d')
 vim.keymap.set('n', '<leader>sd', vim.diagnostic.open_float, { desc = 'Show diagnostic under cursor' })
+
+-- `u` at the exact point a multi-file workspace edit (rename, some code
+-- actions) just landed undoes it across every file it touched; any other
+-- time it's a normal single-buffer undo. See workspace_undo.lua.
+vim.keymap.set('n', 'u', function()
+  require('workspace_undo').smart_undo()
+end, { desc = 'Undo (workspace-edit aware)' })
 
 -- LSP keymaps: buffer-local, set once a language server attaches to the buffer.
 -- <leader>ca (below) replaces the default `gra` code action keymap with a

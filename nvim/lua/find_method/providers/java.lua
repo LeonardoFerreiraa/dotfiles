@@ -21,6 +21,10 @@ function P.is_public(bufnr, sym, class_sym)
     vim.api.nvim_buf_get_lines(bufnr, sym.range.start.line, sym.selectionRange.start.line + 1, false),
     ' '
   )
+  -- jdtls's symbol `range` includes any leading Javadoc/comment, and prose in
+  -- there can contain "private"/"protected" as plain words (e.g. "calls the
+  -- private helper below"), which would otherwise be misread as a modifier.
+  decl = decl:gsub('/%*.-%*/', ''):gsub('//[^\n]*', '')
   if decl:find('%f[%a]private%f[%A]') or decl:find('%f[%a]protected%f[%A]') then
     return false
   end

@@ -142,7 +142,8 @@ function M.code_actions()
 
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/codeAction' })
   local can_format = #vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/formatting' }) > 0
-  if #clients == 0 and not can_format then
+  local can_rename = #vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/rename' }) > 0
+  if #clients == 0 and not can_format and not can_rename then
     vim.notify('Nenhum servidor LSP com suporte a code actions neste buffer.', vim.log.levels.WARN)
     return
   end
@@ -174,6 +175,11 @@ function M.code_actions()
   local function on_choice(item)
     if item.format then
       vim.lsp.buf.format({ bufnr = bufnr, async = true })
+      return
+    end
+
+    if item.rename then
+      vim.lsp.buf.rename()
       return
     end
 
@@ -227,12 +233,16 @@ function M.code_actions()
   })
   picker:find()
 
-  -- "Format Document" isn't a real LSP code action (formatting is its own
-  -- protocol method, textDocument/formatting), so it's synthesized here and
-  -- prepended to whatever real code actions come back, to keep both
+  -- "Format Document" and "Rename Symbol" aren't real LSP code actions
+  -- (formatting and rename are their own protocol methods, textDocument/
+  -- formatting and textDocument/rename), so they're synthesized here and
+  -- prepended to whatever real code actions come back, to keep all three
   -- accessible from a single picker.
   local function finish(action_items)
     local items = {}
+    if can_rename then
+      table.insert(items, { value = { rename = true }, display = 'Rename Symbol' })
+    end
     if can_format then
       table.insert(items, { value = { format = true }, display = 'Format Document' })
     end
