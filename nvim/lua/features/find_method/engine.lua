@@ -1,23 +1,5 @@
--- Language-agnostic "find method" engine.
---
--- The whole flow is plain LSP — workspace/symbol to list classes,
--- documentSymbol to enumerate a class's members, hover for signature +
--- doc, then jump to the picked member — so it works with any language
--- server. The few language-specific decisions are delegated to a provider
--- (see find_method/providers/*.lua):
---   * client_name      which LSP client to talk to (optional)
---   * is_public        member visibility, read however the language encodes it
---   * clean_signature  tidy the hover signature for the list display
---
--- Flow: M.run(provider) opens a Telescope picker backed by workspace/symbol
--- (live-queried, class-like symbols only). Picking a class loads it into a
--- hidden buffer (non-file:// uris — e.g. jdtls's jdt:// library sources — go
--- through the server's own BufReadCmd), enumerates its members, and hovers
--- each. A second picker fuzzy-filters the member signatures (doc in the
--- previewer); <CR> opens the source with the cursor on the picked member.
 local M = {}
 
--- LSP SymbolKind values (1-indexed per the spec).
 local KIND_CLASS = 5
 local KIND_METHOD = 6
 local KIND_ENUM = 10
@@ -27,8 +9,6 @@ local KIND_CONSTRUCTOR = 9
 local CLASS_LIKE = { [KIND_CLASS] = true, [KIND_ENUM] = true, [KIND_INTERFACE] = true }
 local METHOD_LIKE = { [KIND_METHOD] = true, [KIND_CONSTRUCTOR] = true }
 
--- Picks the LSP client to drive: the provider's named client if set,
--- otherwise the first one attached to the buffer.
 local function get_client(bufnr, provider)
   for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
     if not provider.client_name or c.name == provider.client_name then
@@ -38,9 +18,6 @@ local function get_client(bufnr, provider)
   return nil
 end
 
--- Synchronously asks the server for class-like symbols matching `prompt`.
--- Blocks briefly per query; the picker debounces keystrokes. Returns a flat
--- list of { fqn, name, kind, uri, range }.
 local function query_classes(bufnr, prompt)
   if not prompt or prompt == '' then
     return {}
@@ -68,10 +45,6 @@ local function query_classes(bufnr, prompt)
   return out
 end
 
--- Loads the class source into a hidden, LSP-attached buffer. file:// uris are
--- opened directly; other schemes (e.g. jdtls's jdt:// library/JDK sources) are
--- resolved by whatever BufReadCmd the server registered. Waits for a client to
--- attach before returning. Returns the bufnr, or nil on timeout.
 local function load_class_buffer(uri)
   local class_bufnr
   if vim.startswith(uri, 'file://') then
@@ -90,15 +63,10 @@ local function load_class_buffer(uri)
   return class_bufnr
 end
 
--- jdtls's documentSymbol outline sometimes keeps generic type parameters in
--- a class's name (e.g. "HashMap<K, V>") while workspace/symbol always
--- returns the bare name ("HashMap"); strip them so both sides compare equal.
 local function strip_generics(name)
   return (name:gsub('%s*<.*', ''))
 end
 
--- Depth-first search for the DocumentSymbol node representing the target
--- class, matched by name (handles nested types and multiple types per file).
 local function find_class_symbol(symbols, name)
   local target = strip_generics(name)
   for _, sym in ipairs(symbols or {}) do
@@ -113,8 +81,6 @@ local function find_class_symbol(symbols, name)
   return nil
 end
 
--- Extracts a hover response's markdown string, regardless of whether the
--- server returns a MarkupContent, a MarkedString, or a list of them.
 local function hover_to_markdown(contents)
   if not contents then
     return nil
@@ -133,8 +99,6 @@ local function hover_to_markdown(contents)
   return joined ~= '' and joined or nil
 end
 
--- Pulls the one-line signature out of a hover's fenced code block (any
--- language tag), then hands it to the provider to tidy up for display.
 local function extract_signature(markdown, provider, fqn)
   local sig = markdown:match('```%w*%s*\n(.-)\n```')
   if not sig then
@@ -143,18 +107,13 @@ local function extract_signature(markdown, provider, fqn)
   return provider.clean_signature(sig, fqn)
 end
 
--- Opens the Telescope "find method" picker right away with a loading
--- placeholder (matching lsp_extras.lua's pickers), to be refreshed with the
--- real signature list once fetch_and_show's hovers come back. Typing in the
--- prompt fuzzy filters the signature list, the previewer shows the selected
--- member's full doc, and <CR> jumps to the member in its source.
 local function open_methods_picker(fqn, offset_encoding)
   local pickers = require('telescope.pickers')
   local conf = require('telescope.config').values
   local previewers = require('telescope.previewers')
   local actions = require('telescope.actions')
   local action_state = require('telescope.actions.state')
-  local loading = require('telescope_loading')
+  local loading = require('util.telescope_loading')
 
   local picker = pickers.new({}, {
     prompt_title = fqn,
@@ -190,8 +149,6 @@ local function open_methods_picker(fqn, offset_encoding)
   return picker
 end
 
--- Hovers every member in parallel (signature + doc), then refreshes the
--- already-open picker once all responses are in (source order preserved).
 local function fetch_and_show(provider, class_bufnr, uri, item, methods, picker)
   local finders = require('telescope.finders')
   local entries = {}
@@ -233,10 +190,6 @@ local function fetch_and_show(provider, class_bufnr, uri, item, methods, picker)
   end
 end
 
--- Loads the class, enumerates its public members via documentSymbol (visibility
--- decided by the provider), then hands off to fetch_and_show. Opens the
--- picker immediately (loading placeholder) so selecting a class gives
--- instant feedback instead of nothing happening while jdtls responds.
 local function show_methods(provider, item)
   local class_bufnr = load_class_buffer(item.uri)
   if not class_bufnr then
@@ -275,7 +228,6 @@ local function show_methods(provider, item)
   end)
 end
 
--- Entry point: opens the class picker (first step of "find method").
 function M.run(provider)
   local bufnr = vim.api.nvim_get_current_buf()
   if not get_client(bufnr, provider) then
@@ -307,11 +259,6 @@ function M.run(provider)
           local entry = action_state.get_selected_entry()
           actions.close(prompt_bufnr)
           if entry and entry.value then
-            -- Opening a picker synchronously here now races the previous
-            -- picker's close (it used to be safe because show_methods only
-            -- opened a picker later, after the LSP round trip; now it opens
-            -- one immediately for the loading placeholder). Defer a tick so
-            -- the close finishes first.
             vim.schedule(function()
               show_methods(provider, entry.value)
             end)

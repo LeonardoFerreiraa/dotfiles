@@ -1,18 +1,6 @@
--- Java debugging. nvim-dap is a generic Debug Adapter Protocol client; the
--- actual Java adapter (java-debug-adapter) and the JUnit runner (java-test)
--- are loaded *into* the running jdtls server as bundles, not as standalone
--- processes — see lua/jdtls_config.lua (debug_bundles + on_attach). So there
--- is no separate debug server: the same jdtls that powers LSP also drives
--- debug, reusing the per-project $JAVA_HOME managed by cli-assistant.
---
--- Skipped under vim.g.no_lsp (kitty scrollback pager invocation) for the same
--- reason lsp.lua is: pointless weight for a readonly dump.
 local lsp_enabled = not vim.g.no_lsp
 
 return {
-  -- mason-lspconfig's ensure_installed only handles LSP servers; the debug
-  -- adapter and test runner are Mason "tools", so a separate installer is
-  -- needed to auto-install them alongside jdtls.
   {
     'WhoIsSethDaniel/mason-tool-installer.nvim',
     enabled = lsp_enabled,
@@ -26,8 +14,6 @@ return {
     'mfussenegger/nvim-dap',
     enabled = lsp_enabled,
     dependencies = {
-      -- dap-ui gives the scopes/stacks/breakpoints/watches/repl panels;
-      -- nvim-nio is its required async runtime.
       { 'rcarriga/nvim-dap-ui', dependencies = { 'nvim-neotest/nvim-nio' } },
     },
     config = function()
@@ -35,8 +21,6 @@ return {
       local dapui = require('dapui')
       dapui.setup()
 
-      -- Open the UI when a debug session starts, close it when it ends, so the
-      -- panels are only present while actually debugging.
       dap.listeners.after.event_initialized['dapui_config'] = function()
         dapui.open()
       end
@@ -51,17 +35,12 @@ return {
       vim.fn.sign_define('DapBreakpointCondition', { text = '◆', texthl = 'DiagnosticWarn' })
       vim.fn.sign_define('DapStopped', { text = '▶', texthl = 'DiagnosticOk', linehl = 'Visual' })
 
-      -- Debug keymaps live under <leader>d (free: keymaps.lua uses g/n/s/c/f/l).
       local map = vim.keymap.set
       map('n', '<leader>db', dap.toggle_breakpoint, { desc = 'DAP: toggle breakpoint' })
       map('n', '<leader>dB', function()
         dap.set_breakpoint(vim.fn.input('Breakpoint condition: '))
       end, { desc = 'DAP: conditional breakpoint' })
       map('n', '<leader>dc', dap.continue, { desc = 'DAP: continue / start' })
-      -- Remote attach to a JVM started with JDWP (e.g. `./gradlew bootRun
-      -- --debug-jvm`, which listens on :5005). Run ad-hoc via dap.run instead
-      -- of dap.configurations.java because jdtls' setup_dap_main_class_configs
-      -- overwrites that list with launch-only configs on every attach.
       map('n', '<leader>da', function()
         local port = tonumber(vim.fn.input('Attach to JDWP port: ', '5005'))
         if not port then
@@ -84,10 +63,6 @@ return {
       map({ 'n', 'v' }, '<leader>de', function()
         dapui.eval()
       end, { desc = 'DAP: eval expression under cursor' })
-      -- Mirrors dapui.util.get_current_expr() (current word / visual
-      -- selection), but using plain vim.fn instead of nio.fn: nio's async
-      -- wrappers need to run inside a nio.run coroutine (see dapui.eval),
-      -- and this keymap has no reason to be async.
       local function current_expr()
         if vim.fn.mode() ~= 'v' then
           return vim.fn.expand('<cexpr>')

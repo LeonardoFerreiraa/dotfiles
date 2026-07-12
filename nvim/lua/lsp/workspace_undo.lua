@@ -1,9 +1,3 @@
--- Neovim's undo is per-buffer, so a multi-file LSP workspace edit (rename,
--- some code actions/refactors) can't be undone with a single `u` — that
--- only reverts the buffer you're standing in, leaving every other touched
--- file changed. This wraps vim.lsp.util.apply_workspace_edit to record
--- which buffers a given edit touched and their undo-tree position before
--- and after, so the whole edit can be rolled back across files at once.
 local M = {}
 
 local history = {}
@@ -67,10 +61,6 @@ function M.setup()
   end
 end
 
--- Undoes the most recent workspace edit across every buffer it touched. If a
--- buffer was edited again after the workspace edit landed, that buffer is
--- skipped (its undo-tree position no longer matches) and reported, rather
--- than clobbering unrelated later edits.
 function M.undo_last()
   local record = table.remove(history)
   if not record then
@@ -103,10 +93,6 @@ function M.undo_last()
   end
 end
 
--- Drop-in replacement for the `u` keymap. If the cursor's buffer sits right
--- at the boundary the last recorded workspace edit left it in (nothing else
--- was typed since), `u` undoes that edit across every file it touched;
--- otherwise it's a plain single-buffer undo, same as always.
 function M.smart_undo()
   if vim.v.count > 1 then
     vim.cmd('normal! ' .. vim.v.count .. 'u')

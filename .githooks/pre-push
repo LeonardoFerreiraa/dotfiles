@@ -1,0 +1,8 @@
+#!/bin/sh
+# Run the Neovim config test suite before every push. Install with `make hooks`
+# (sets core.hooksPath to this dir). Bypass a one-off push with `--no-verify`.
+echo "pre-push: running make test..."
+if ! make test; then
+	echo "pre-push: tests failed — push aborted (use 'git push --no-verify' to override)." >&2
+	exit 1
+fi

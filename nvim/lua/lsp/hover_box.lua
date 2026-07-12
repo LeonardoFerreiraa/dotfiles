@@ -1,9 +1,3 @@
--- Customizes the LSP hover float bound to `K`: a rounded border matching the
--- rest of the UI (same style as nvim-tree's popups), inner padding so text
--- isn't flush against the border, a blank line separating a leading
--- code-fenced signature from the prose below it (jdtls in particular renders
--- a class signature and its Javadoc back-to-back with no visual gap), and
--- <Esc> to dismiss (the native float only binds `q`).
 local M = {}
 
 function M.setup()
@@ -16,8 +10,6 @@ function M.setup()
     if is_hover then
       opts.border = opts.border or 'rounded'
 
-      -- Insert a blank line right after any code fence closes, if prose
-      -- follows immediately without one (e.g. signature -> Javadoc).
       local spaced = {}
       local in_fence = false
       for i, line in ipairs(contents) do
@@ -37,8 +29,6 @@ function M.setup()
     if is_hover and winnr and not vim.w[winnr].hover_box then
       vim.w[winnr].hover_box = true
 
-      -- Inner padding: 1 blank line above/below, 1 space left (the window is
-      -- widened by 2 below, so the extra column becomes right padding).
       local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
       local padded = { '' }
       for _, line in ipairs(lines) do
@@ -55,8 +45,6 @@ function M.setup()
       cfg.width = cfg.width + 2
       vim.api.nvim_win_set_config(winnr, cfg)
 
-      -- <Esc> closes the box from the source buffer (hover opens unfocused)
-      -- and from inside it too (after `KK` jumps focus into the float).
       local src_bufnr = vim.api.nvim_get_current_buf()
       vim.keymap.set('n', '<Esc>', function()
         if vim.api.nvim_win_is_valid(winnr) then
@@ -73,8 +61,6 @@ function M.setup()
         end,
       })
 
-      -- Focus the box immediately so cursor keys/scrolling work without a
-      -- second `K` (native hover opens unfocused).
       vim.api.nvim_win_set_cursor(winnr, { 1, 0 })
       vim.api.nvim_set_current_win(winnr)
     end

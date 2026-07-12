@@ -1,9 +1,3 @@
--- `vim.lsp.foldtext()` falls back to the raw, unformatted first source line
--- when the server doesn't supply `collapsedText` for a fold. jdtls doesn't
--- send one, so a folded Javadoc/comment block would show its literal first
--- line (e.g. "/**") instead of a useful summary. Detect that fallback and
--- build a cleaner one-line preview for comment folds; anything else (or a
--- server that *did* supply collapsedText) passes through untouched.
 local M = {}
 
 function M.get()

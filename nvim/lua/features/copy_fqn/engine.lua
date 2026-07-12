@@ -1,24 +1,11 @@
--- Language-agnostic "copy FQN" engine (IntelliJ's "Copy Reference" for nvim).
---
--- Finds the DocumentSymbol path (root -> innermost) enclosing the cursor via
--- plain textDocument/documentSymbol, hands that path to the provider to
--- render as a fully-qualified name/reference (e.g. `pkg.Class#method`), then
--- copies the result to the unnamed and `+` registers. The only
--- language-specific piece is the provider (see copy_fqn/providers/*.lua):
---   * client_name  which LSP client to talk to (optional)
---   * build_fqn    render a symbol path into the language's FQN format
 local M = {}
 
--- Whether `pos` ({line, character}, matching the range's encoding) falls
--- inside DocumentSymbol range `r`.
 local function range_contains(r, pos)
   local after_start = pos.line > r.start.line or (pos.line == r.start.line and pos.character >= r.start.character)
   local before_end = pos.line < r['end'].line or (pos.line == r['end'].line and pos.character <= r['end'].character)
   return after_start and before_end
 end
 
--- Depth-first: the list of symbols (root..leaf) whose range contains `pos`,
--- following the most nested match at each level.
 local function symbol_path(symbols, pos)
   for _, sym in ipairs(symbols or {}) do
     if sym.range and range_contains(sym.range, pos) then
@@ -30,7 +17,6 @@ local function symbol_path(symbols, pos)
   return {}
 end
 
--- Entry point: resolves the symbol under the cursor and copies its FQN.
 function M.run(provider)
   local bufnr = vim.api.nvim_get_current_buf()
   local winnr = vim.api.nvim_get_current_win()

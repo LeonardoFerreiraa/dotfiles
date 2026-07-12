@@ -1,50 +1,34 @@
-require('hover_box').setup()
-require('workspace_undo').setup()
+require('lsp.hover_box').setup()
+require('lsp.workspace_undo').setup()
 
--- jdtls is started via a plain FileType autocmd (not ftplugin/java.lua)
--- because Neovim loads ftplugin/*.lua before lazy.nvim finishes putting
--- plugins on the runtimepath, causing "module 'jdtls' not found" when a
--- .java file is opened directly from the command line (nvim file.java).
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'java',
   callback = function(args)
-    require('jdtls_config').setup(args.buf)
+    require('lsp.jdtls_config').setup(args.buf)
     vim.api.nvim_buf_create_user_command(args.buf, 'JavaSetJdk', function()
-      require('jdtls_config').pick_jdk_and_start()
+      require('lsp.jdtls_config').pick_jdk_and_start()
     end, { desc = 'Pick a JDK (via cli-assistant) and (re)start jdtls' })
     vim.api.nvim_buf_create_user_command(args.buf, 'JavaReindex', function()
-      require('jdtls_config').reindex()
+      require('lsp.jdtls_config').reindex()
     end, { desc = 'Wipe jdtls workspace data and restart (full re-index)' })
   end,
 })
 
--- Language-agnostic: dispatches to a provider by the buffer's filetype (java
--- for now). Global so it works from the command palette in any buffer;
--- find_method guards when no provider/LSP matches.
 vim.api.nvim_create_user_command('FindMethod', function()
-  require('find_method').open()
+  require('features.find_method').open()
 end, { desc = 'Find & jump to a public method/member of any reachable class' })
 
 vim.api.nvim_create_user_command('CopyFQN', function()
-  require('copy_fqn').run()
+  require('features.copy_fqn').run()
 end, { desc = 'Copy fully-qualified name/reference of the symbol under the cursor' })
 
--- <leader>sd (show diagnostic) replaces the default `<C-w>d`; unmap the
--- global default once (works on any buffer, not just LSP-attached ones,
--- since diagnostics can also come from non-LSP sources).
 pcall(vim.keymap.del, 'n', '<C-w>d')
 vim.keymap.set('n', '<leader>sd', vim.diagnostic.open_float, { desc = 'Show diagnostic under cursor' })
 
--- `u` at the exact point a multi-file workspace edit (rename, some code
--- actions) just landed undoes it across every file it touched; any other
--- time it's a normal single-buffer undo. See workspace_undo.lua.
 vim.keymap.set('n', 'u', function()
-  require('workspace_undo').smart_undo()
+  require('lsp.workspace_undo').smart_undo()
 end, { desc = 'Undo (workspace-edit aware)' })
 
--- LSP keymaps: buffer-local, set once a language server attaches to the buffer.
--- <leader>ca (below) replaces the default `gra` code action keymap with a
--- Telescope-based picker; unmap the global default once, globally.
 pcall(vim.keymap.del, 'n', 'gra')
 
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -56,15 +40,13 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set(
       'n',
       '<leader>fd',
-      require('lsp_extras').definitions_and_declarations,
+      require('lsp.lsp_extras').definitions_and_declarations,
       vim.tbl_extend('force', opts, { desc = 'Definitions & declarations (Telescope, deduped)' })
     )
-    -- replaces the default `gra` with <leader>ca, showing results in
-    -- Telescope (with a loading placeholder) instead of vim.ui.select
     vim.keymap.set(
       'n',
       '<leader>ca',
-      require('lsp_extras').code_actions,
+      require('lsp.lsp_extras').code_actions,
       vim.tbl_extend('force', opts, { desc = 'Code actions (Telescope, com loading)' })
     )
     vim.keymap.set('n', '<leader>cf', function()

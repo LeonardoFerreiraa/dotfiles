@@ -2,23 +2,8 @@ local M = {}
 
 local CLI_ASSISTANT_BIN = vim.fn.expand('~/.local/libexec/cli-assistant/cli-assistant')
 
--- Eclipse's formatter (used by jdtls) only understands its own XML profile
--- format or a project's .settings/org.eclipse.jdt.core.prefs. The base
--- codestyle (brace position, wrapping, import order, etc.) comes from a
--- full Eclipse profile checked into the dotfiles repo.
---
--- Indentation (tab vs space, size) is NOT controlled by this XML in
--- practice: the LSP textDocument/formatting request always carries
--- required FormattingOptions.tabSize/insertSpaces fields (derived by
--- Neovim from the buffer's 'shiftwidth'/'expandtab'), and jdtls prioritizes
--- those request-level values over whatever the profile XML says for the
--- equivalent tabulation.size/tabulation.char keys. So indentation is
--- handled separately, as buffer-local vim options (see
--- apply_indentation_defaults below) — the XML's own tabulation settings
--- are effectively a dead letter and not worth fighting.
 local BASE_CODESTYLE_XML = vim.fn.stdpath('config') .. '/codestyle/eclipse-profile.xml'
 
--- Extracts { [setting_id] = value } from an Eclipse formatter profile XML.
 local function parse_formatter_xml(path)
   local settings = {}
   local f = io.open(path, 'r')
@@ -33,10 +18,6 @@ local function parse_formatter_xml(path)
   return settings
 end
 
--- Writes the base codestyle profile to the jdtls workspace dir (cache,
--- outside the project — never versioned with it) and returns the
--- java.format settings pointing at it. Returns nil when the base codestyle
--- XML is missing, so callers fall back to jdtls's own default profile.
 local function formatter_settings(workspace_dir)
   local settings = parse_formatter_xml(BASE_CODESTYLE_XML)
   if vim.tbl_isempty(settings) then
@@ -58,13 +39,6 @@ local function formatter_settings(workspace_dir)
   return { settings = { url = xml_path, profile = 'dotfiles' } }
 end
 
--- Sets 'shiftwidth'/'tabstop'/'expandtab' for the buffer from the base
--- codestyle's tabulation.size/tabulation.char, so the LSP format request's
--- (required) tabSize/insertSpaces fields match the project's real style
--- instead of the editor's own global default. Skipped when the buffer
--- already has a resolved .editorconfig with its own indent properties
--- (`vim.b[bufnr].editorconfig`, set by Neovim before FileType fires) —
--- that's project-specific and takes priority over the dotfiles base.
 local function apply_indentation_defaults(bufnr)
   local ec = vim.b[bufnr] and vim.b[bufnr].editorconfig
   if ec and (ec.indent_style or ec.indent_size or ec.tab_width) then
@@ -83,11 +57,6 @@ local function apply_indentation_defaults(bufnr)
   vim.bo[bufnr].expandtab = char ~= 'tab'
 end
 
--- Collects the debug adapter + JUnit runner jars (installed by Mason via
--- mason-tool-installer, see lua/plugins/dap.lua) to hand to jdtls as bundles.
--- Loaded into the running jdtls server (init_options.bundles) so debug/test
--- run through the same process as LSP — no second server. Returns {} when the
--- packages aren't installed yet, so jdtls still starts (just without debug).
 local function debug_bundles()
   local mason_registry = require('mason-registry')
   local bundles = {}
@@ -100,8 +69,6 @@ local function debug_bundles()
     vim.list_extend(bundles, vim.split(jar, '\n', { trimempty = true }))
   end
 
-  -- java-test contributes the JUnit/TestNG bundles used to debug individual
-  -- tests (setup_dap_main_class_configs picks these up).
   local ok_test, test = pcall(function()
     return mason_registry.get_package('java-test'):get_install_path()
   end)
@@ -113,7 +80,6 @@ local function debug_bundles()
   return bundles
 end
 
--- Lists JDK versions installed via cli-assistant, e.g. { 11, 17, 21, ... }.
 local function list_installed_jdks()
   if vim.fn.executable(CLI_ASSISTANT_BIN) == 0 then
     return {}
@@ -129,9 +95,6 @@ local function list_installed_jdks()
   return versions
 end
 
--- Lets you pick an installed JDK (via cli-assistant) and (re)starts jdtls for
--- the current buffer using it. Useful when nvim was opened from a directory
--- that has no JDK selected in cli-assistant, so jdtls never started.
 function M.pick_jdk_and_start()
   local versions = list_installed_jdks()
   if #versions == 0 then
@@ -151,9 +114,6 @@ function M.pick_jdk_and_start()
   end)
 end
 
--- Wipes the jdtls workspace data dir for the current project and restarts the
--- server, forcing a full re-index. Useful after switching JDKs mid-session or
--- to recover from a corrupted workspace index.
 function M.reindex()
   require('jdtls.setup').wipe_data_and_restart()
 end
@@ -178,7 +138,6 @@ function M.setup(bufnr)
     os_config = 'win'
   end
 
-  -- workspace folder, one per project (based on project root name)
   local root_markers = { '.git', 'gradlew', 'mvnw', 'pom.xml', 'build.gradle', 'build.gradle.kts' }
   local root_dir = require('jdtls.setup').find_root(root_markers)
   if not root_dir or root_dir == '' then
@@ -187,9 +146,6 @@ function M.setup(bufnr)
   local project_name = vim.fn.fnamemodify(root_dir, ':t')
   local workspace_dir = vim.fn.stdpath('cache') .. '/jdtls-workspace/' .. project_name
 
-  -- JDK is managed per-project by cli-assistant (~/.cli-assistant/shims/java),
-  -- which sets $JAVA_HOME based on cwd. Run jdtls with the JDK already selected
-  -- for this project instead of hardcoding a JDK path.
   local java_home = vim.env.JAVA_HOME
   local java_bin
 
@@ -200,7 +156,7 @@ function M.setup(bufnr)
       'JAVA_HOME não definido. Rode "cli-assistant env java use <versão>" neste projeto antes de abrir o nvim.',
       vim.log.levels.WARN
     )
-    java_bin = 'java' -- falls back to whatever is on PATH (the cli-assistant shim)
+    java_bin = 'java'
   end
 
   local config = {
@@ -211,11 +167,6 @@ function M.setup(bufnr)
       '-Declipse.product=org.eclipse.jdt.ls.core.product',
       '-Dlog.protocol=true',
       '-Dlog.level=ALL',
-      -- keeps .project/.classpath/.settings out of the project root, inside
-      -- the jdtls workspace dir instead (like IntelliJ's .idea). The
-      -- equivalent `settings.java.import.generatesMetadataFilesAtProjectRoot`
-      -- key is unreliable (redhat-developer/vscode-java#2929) — this JVM
-      -- system property form is honored consistently.
       '-Djava.import.generatesMetadataFilesAtProjectRoot=false',
       '-javaagent:' .. jdtls_path .. '/lombok.jar',
       '-Xmx1g',
@@ -238,11 +189,6 @@ function M.setup(bufnr)
     init_options = {
       bundles = debug_bundles(),
     },
-    -- Activate nvim-dap integration once jdtls attaches: setup_dap wires the
-    -- java debug adapter, and setup_dap_main_class_configs asks jdtls to
-    -- resolve runnable main classes + JUnit configs (so <leader>dc lists them
-    -- without hand-written launch.json). Runs a jdtls resolve command, so it
-    -- must happen after attach, not before the server exists.
     on_attach = function()
       require('jdtls').setup_dap({ hotcodereplace = 'auto' })
       require('jdtls.dap').setup_dap_main_class_configs()

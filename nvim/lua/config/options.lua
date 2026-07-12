@@ -41,15 +41,10 @@ opt.listchars = { tab = '▶ ', trail = '·' }
 
 opt.hidden = true
 
--- Folding via LSP (jdtls reports methods, classes, javadoc/comment blocks,
--- imports, etc. as fold ranges). `vim.lsp.foldexpr()` degrades to "no folds"
--- on buffers with no LSP client, so this is safe as a global default.
 opt.foldmethod = 'expr'
 opt.foldexpr = 'v:lua.vim.lsp.foldexpr()'
-opt.foldtext = "v:lua.require('fold_text').get()"
-opt.foldlevelstart = 99 -- open all folds when a buffer is first shown
+opt.foldtext = "v:lua.require('util.fold_text').get()"
+opt.foldlevelstart = 99
 
--- Disable netrw entirely; oil.nvim is the directory browser (see
--- lua/plugins/oil.lua). Must be set before netrw's plugin loads at startup.
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1

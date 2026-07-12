@@ -1,9 +1,3 @@
--- File create/rename/delete actions for the command palette, including
--- jdtls-aware handling for .java files (package skeleton on create,
--- textDocument/rename on rename).
-
--- Version-tolerant client:supports_method (method form on 0.11+, function form
--- on older nvim).
 local function supports(client, method)
   local ok, r = pcall(function()
     return client:supports_method(method)
@@ -17,8 +11,6 @@ local function supports(client, method)
   return ok and r or false
 end
 
--- Directory to create/act in: the current file's dir when we're on a real file
--- buffer, otherwise the cwd (e.g. when invoked from the nvim-tree float).
 local function target_dir()
   local cur = vim.api.nvim_buf_get_name(0)
   if cur ~= '' and vim.bo.buftype == '' and vim.fn.filereadable(cur) == 1 then
@@ -27,9 +19,6 @@ local function target_dir()
   return vim.fn.getcwd()
 end
 
--- Derives the Java package from a directory by locating the source root
--- (src/main/java or src/test/java) and dotting the remainder. Returns nil for
--- the default package or when no source root is found.
 local function java_package_from_dir(dir)
   local d = dir .. '/'
   for _, root in ipairs({ '/src/main/java/', '/src/test/java/' }) do
@@ -45,9 +34,6 @@ local function java_package_from_dir(dir)
   return nil
 end
 
--- Builds the initial contents of a new .java file: package declaration (from
--- the path) + a public type stub. jdtls doesn't create files, so this mirrors
--- what the vscode-java "new file template" does on the client side.
 local function java_skeleton(path)
   local name = vim.fn.fnamemodify(path, ':t:r')
   local pkg = java_package_from_dir(vim.fn.fnamemodify(path, ':h'))
@@ -62,10 +48,6 @@ local function java_skeleton(path)
   return lines
 end
 
--- Locates the position of a top-level type's name in a buffer via
--- documentSymbol, so we can drive textDocument/rename at the class name.
--- Prefers the type matching `type_name` (the filename), falls back to the first
--- class/interface/enum/record.
 local function java_type_position(bufnr, type_name)
   local params = { textDocument = vim.lsp.util.make_text_document_params(bufnr) }
   local res = vim.lsp.buf_request_sync(bufnr, 'textDocument/documentSymbol', params, 2000)
@@ -80,7 +62,6 @@ local function java_type_position(bufnr, type_name)
         if s.name == type_name then
           return sel.start
         end
-        -- SymbolKind: Class=5, Enum=10, Interface=11, Struct/record=23
         if not first_type and (s.kind == 5 or s.kind == 10 or s.kind == 11 or s.kind == 23) then
           first_type = sel.start
         end
@@ -100,8 +81,6 @@ function M.create_file()
     end
     local path = dir .. '/' .. name
     vim.cmd('edit ' .. vim.fn.fnameescape(path))
-    -- seed a Java skeleton into the (empty) new buffer; other filetypes stay
-    -- blank. jdtls indexes it via its file watcher once written.
     local empty = vim.api.nvim_buf_line_count(0) == 1 and vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] == ''
     if name:match('%.java$') and empty then
       vim.api.nvim_buf_set_lines(0, 0, -1, false, java_skeleton(path))
@@ -123,10 +102,6 @@ function M.rename_file()
     if not name or name == '' or name == old_name then
       return
     end
-    -- Java + jdtls: drive textDocument/rename on the primary type. jdtls does
-    -- the heavy lifting (rename class, update every reference, and emit a
-    -- RenameFile so the .java file itself is moved). vim.lsp.buf.rename applies
-    -- the whole WorkspaceEdit, RenameFile included.
     if vim.bo[bufnr].filetype == 'java' then
       local client = vim.lsp.get_clients({ bufnr = bufnr, name = 'jdtls' })[1]
       if client and supports(client, 'textDocument/rename') then
@@ -139,7 +114,6 @@ function M.rename_file()
         vim.notify('jdtls: could not locate the type to rename; falling back to fs rename', vim.log.levels.WARN)
       end
     end
-    -- Fallback: plain filesystem rename (non-java, or jdtls not attached yet).
     local new = dir .. '/' .. name
     if not os.rename(old, new) then
       vim.notify('Rename failed', vim.log.levels.ERROR)
@@ -161,8 +135,6 @@ function M.delete_file()
     if answer ~= 'y' and answer ~= 'Y' then
       return
     end
-    -- Plain fs delete; jdtls has no willDeleteFiles but notices the removal via
-    -- its file watcher (didChangeWatchedFiles).
     if vim.fn.delete(path) ~= 0 then
       vim.notify('Delete failed', vim.log.levels.ERROR)
       return

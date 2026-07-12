@@ -1,10 +1,3 @@
--- Extra LSP pickers built on top of Telescope.
---
--- Both pickers here open the Telescope window immediately with a "loading"
--- placeholder entry, then refresh it with the real results once the LSP
--- responds. This gives instant feedback that the keymap was triggered,
--- instead of nothing happening for a second or two while the request is
--- in flight (noticeable with slower servers like jdtls).
 local M = {}
 
 local pickers = require('telescope.pickers')
@@ -13,12 +6,8 @@ local conf = require('telescope.config').values
 local make_entry = require('telescope.make_entry')
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
-local loading = require('telescope_loading')
+local loading = require('util.telescope_loading')
 
--- Opens a Telescope picker right away with a loading placeholder, then calls
--- `request(on_result)` to fetch the real data asynchronously. `on_result`
--- must be called with either a list of quickfix-style items, or nil/empty
--- when there's nothing to show.
 local function open_async_picker(prompt_title, request)
   local picker = pickers.new({}, {
     prompt_title = prompt_title,
@@ -51,10 +40,6 @@ local function open_async_picker(prompt_title, request)
   end)
 end
 
--- Combines "go to definition" and "go to declaration" into a single
--- deduplicated picker. Most languages (Java included) don't have a
--- meaningful distinction between the two, so it's more useful to see both
--- merged than to have two separate, mostly-overlapping pickers.
 function M.definitions_and_declarations()
   local bufnr = vim.api.nvim_get_current_buf()
   local params = vim.lsp.util.make_position_params(0, 'utf-16')
@@ -82,8 +67,6 @@ function M.definitions_and_declarations()
 
   open_async_picker('Definitions & Declarations', function(on_result)
     M._on_definitions_done = function(results)
-      -- dedupe by uri + range, since definition and declaration usually
-      -- point to the exact same location
       local seen = {}
       local unique = {}
       local offset_encoding
@@ -107,8 +90,6 @@ function M.definitions_and_declarations()
   end)
 end
 
--- Same as telescope.builtin.lsp_references, but opens the picker immediately
--- with a loading placeholder instead of waiting for the response first.
 function M.references()
   local bufnr = vim.api.nvim_get_current_buf()
   local params = vim.lsp.util.make_position_params(0, 'utf-16')
@@ -129,12 +110,6 @@ function M.references()
   end)
 end
 
--- Same as vim.lsp.buf.code_action(), but built independently (rather than
--- delegating to it) so it can capture the origin buffer/window/cursor
--- *before* opening the Telescope picker. vim.lsp.buf.code_action() always
--- operates on nvim_get_current_buf()/nvim_get_current_win(), and opening a
--- Telescope picker moves focus (and closes the picker if focus moves away
--- again), so delegating to it after picker:find() doesn't work.
 function M.code_actions()
   local bufnr = vim.api.nvim_get_current_buf()
   local winnr = vim.api.nvim_get_current_win()
@@ -233,11 +208,6 @@ function M.code_actions()
   })
   picker:find()
 
-  -- "Format Document" and "Rename Symbol" aren't real LSP code actions
-  -- (formatting and rename are their own protocol methods, textDocument/
-  -- formatting and textDocument/rename), so they're synthesized here and
-  -- prepended to whatever real code actions come back, to keep all three
-  -- accessible from a single picker.
   local function finish(action_items)
     local items = {}
     if can_rename then

@@ -4,14 +4,9 @@ local conf = require('telescope.config').values
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local entry_display = require('telescope.pickers.entry_display')
-local file_ops = require('file_ops')
+local file_ops = require('util.file_ops')
 
--- desc pode ser uma string ou uma lista de strings (sinônimos/aliases) —
--- cada desc vira uma linha própria na palette, todas com o mesmo `keys`.
--- Um item pode usar `keys` (reenviado via feedkeys) OU `action` (função Lua,
--- pra ações que precisam de input do usuário, como criar/renomear arquivo).
 local defs = {
-  -- find / telescope
   { keys = '<leader>ff', desc = { 'go to file', 'find file' } },
   { keys = '<leader>fg', desc = { 'live grep', 'find anywhere' } },
   { keys = '<leader>fb', desc = { 'find buffers', 'open buffers' } },
@@ -19,7 +14,6 @@ local defs = {
   { keys = '<leader>fu', desc = 'find usage' },
   { keys = '<leader>fd', desc = { 'go to definitions', 'go to declarations' } },
 
-  -- lsp
   { keys = '<leader>ca',      desc = 'code actions' },
   { keys = '<leader>cf',      desc = 'format document' },
   { keys = '<leader>sd',      desc = 'show diagnostic' },
@@ -28,34 +22,27 @@ local defs = {
   { keys = ':FindMethod<CR>', desc = 'find method' },
   { keys = ':CopyFQN<CR>',    desc = 'copy fqn' },
 
-  -- jumps
   { keys = '<leader>gb', desc = 'go back' },
   { keys = '<leader>gf', desc = 'go forward' },
 
-  -- window navigation
   { keys = '<leader>nh', desc = 'go to left window' },
   { keys = '<leader>nj', desc = 'go to lower window' },
   { keys = '<leader>nk', desc = 'go to upper window' },
   { keys = '<leader>nl', desc = 'go to right window' },
 
-  -- splits / explorer
   { keys = '-',                      desc = 'open file explorer' },
   { keys = ':split<CR>',             desc = 'split up' },
   { keys = ':rightbelow split<CR>',  desc = 'split down' },
   { keys = ':vsplit<CR>',            desc = 'split left' },
   { keys = ':rightbelow vsplit<CR>', desc = 'split right' },
 
-  -- buffers
   { keys = ':CloseOtherBuffers<CR>', desc = 'close other buffers' },
 
-  -- file operations
   { action = file_ops.create_file, desc = 'create file' },
   { action = file_ops.rename_file, desc = 'rename file' },
   { action = file_ops.delete_file, desc = 'delete file' },
 }
 
--- Flattens `defs` (which may have multiple descs per entry) into one
--- picker item per desc string.
 local function build_items(definitions)
   local items = {}
   for _, def in ipairs(definitions) do
@@ -82,6 +69,8 @@ local function build_displayer(items)
 end
 
 local M = {}
+
+M.defs = defs
 
 function M.open()
   local items = build_items(defs)
