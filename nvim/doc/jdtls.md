@@ -20,7 +20,10 @@ the cwd. jdtls launches with that `$JAVA_HOME` instead of a hardcoded JDK path.
   `automatic_enable.exclude = { 'jdtls' }`. Otherwise nvim-lspconfig auto-starts
   a *second* jdtls using a bare `java`/`jdtls` from PATH (ignoring `$JAVA_HOME`)
   and fails with "Unable to locate a Java Runtime". jdtls is started manually so
-  it uses the per-project `$JAVA_HOME`.
+  it uses the per-project `$JAVA_HOME`. Other servers in `ensure_installed`
+  (`basedpyright`, `ruff` for Python) are the normal case — mason-lspconfig's
+  `automatic_enable` starts them via nvim-lspconfig with no manual autocmd. Only
+  jdtls is excluded because of this JDK issue.
 - **Metadata files out of project root**: launched with the JVM prop
   `-Djava.import.generatesMetadataFilesAtProjectRoot=false` (keeps
   `.project`/`.classpath`/`.settings` in the workspace dir, IntelliJ-style). The

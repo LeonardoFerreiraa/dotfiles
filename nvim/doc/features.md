@@ -19,16 +19,19 @@ Each is `init.lua` (filetype -> provider dispatch, auto-discovered from
 See `doc/architecture.md` for the discovery contract.
 
 - **copy_fqn** — IntelliJ's "Copy Reference": renders the DocumentSymbol path
-  under the cursor as `pkg.Outer.Inner#member` and copies it. Java format tested
-  in `tests/copy_fqn_spec.lua`.
+  under the cursor and copies it. Java -> `pkg.Outer.Inner#member`
+  (`tests/copy_fqn_spec.lua`); Python -> dotted `module.Class.method`, where the
+  module is resolved by walking up `__init__.py` packages from the buffer's file
+  (`tests/copy_fqn_python_spec.lua`).
 - **find_method** — workspace/symbol to list classes, documentSymbol to
   enumerate a class's public members, hover for signatures, jump to the pick.
   - Non-`file://` uris (jdtls's `jdt://` library/JDK sources) are opened via the
     server's own `BufReadCmd`.
   - Generic type params are stripped (`HashMap<K,V>` -> `HashMap`) so
     `documentSymbol` and `workspace/symbol` names compare equal.
-  - Visibility/signature cleanup is per-provider; Java logic tested in
-    `tests/find_method_spec.lua`.
+  - Visibility/signature cleanup is per-provider. Java visibility reads source
+    modifiers (`tests/find_method_spec.lua`); Python uses the leading-underscore
+    convention, dunders count as public (`tests/find_method_python_spec.lua`).
 
 ## Instant-feedback pickers
 

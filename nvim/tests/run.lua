@@ -22,7 +22,9 @@ local t = require('tests.harness')
 local specs = {
   'tests.load_spec', -- must be first: sources init.lua, force-loads plugins
   'tests.copy_fqn_spec',
+  'tests.copy_fqn_python_spec',
   'tests.find_method_spec',
+  'tests.find_method_python_spec',
   'tests.dispatch_spec',
   'tests.startup_spec',
   'tests.palette_spec',

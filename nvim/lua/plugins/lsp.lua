@@ -11,7 +11,7 @@ return {
     enabled = lsp_enabled,
     dependencies = { 'mason-org/mason.nvim', 'neovim/nvim-lspconfig' },
     opts = {
-      ensure_installed = { 'jdtls' },
+      ensure_installed = { 'jdtls', 'basedpyright', 'ruff' },
       automatic_enable = {
         exclude = { 'jdtls' },
       },

@@ -4,8 +4,7 @@ return {
   opts = {
     keymap = {
       preset = 'default',
-      ['<Tab>'] = { 'accept', 'fallback' },
-      ['<Esc>'] = { 'hide', 'fallback' },
+      ['<Tab>'] = { 'accept', 'fallback' }
     },
     sources = {
       default = { 'lsp', 'path', 'snippets', 'buffer' },

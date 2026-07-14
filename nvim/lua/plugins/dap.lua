@@ -6,7 +6,7 @@ return {
     enabled = lsp_enabled,
     dependencies = { 'mason-org/mason.nvim' },
     opts = {
-      ensure_installed = { 'java-debug-adapter', 'java-test' },
+      ensure_installed = { 'java-debug-adapter', 'java-test', 'debugpy' },
     },
   },
 
@@ -15,11 +15,14 @@ return {
     enabled = lsp_enabled,
     dependencies = {
       { 'rcarriga/nvim-dap-ui', dependencies = { 'nvim-neotest/nvim-nio' } },
+      'mfussenegger/nvim-dap-python',
     },
     config = function()
       local dap = require('dap')
       local dapui = require('dapui')
       dapui.setup()
+
+      require('dap-python').setup(vim.fn.stdpath('data') .. '/mason/packages/debugpy/venv/bin/python')
 
       dap.listeners.after.event_initialized['dapui_config'] = function()
         dapui.open()

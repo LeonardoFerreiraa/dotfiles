@@ -17,3 +17,13 @@ Config: `lua/plugins/dap.lua`. Keymaps under `<leader>d`. Skipped under
 - dap-ui opens the scopes/stacks/breakpoints/watches/repl panels on session
   start, closes them on end. nvim-tree's window-picker excludes these panels so
   files open in the code window (see `doc/plugins.md`).
+
+## Python
+
+Unlike Java, Python debug is a **standalone adapter**, not a bundle in an LSP
+server. `debugpy` is a mason tool (in the same `mason-tool-installer` list) and
+`nvim-dap-python` (`require('dap-python').setup(...)` in `plugins/dap.lua`) is
+pointed at mason's `debugpy/venv/bin/python`. That registers the `python`
+adapter and default launch configs (run file / run as module / pytest). All the
+`<leader>d` keymaps are language-agnostic and work as-is; remote attach
+(`<leader>da`) is Java-only (JDWP).
